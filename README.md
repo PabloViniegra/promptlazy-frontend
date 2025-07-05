@@ -1,7 +1,7 @@
 # Frontend de PromptLazy
 
 <p align="center">
-  <img src="public/logo.svg" alt="PromptLazy Logo" width="200"/>
+  <img src="public/logo.svg" alt="PromptLazy Logo" width="200" style="filter: invert(100%);"/>
 </p>
 
 ## Acerca del Frontend
