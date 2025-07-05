@@ -1,0 +1,82 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build files
+dist/
+dist-ssr/
+coverage/
+*.local
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Testing
+/cypress/videos/
+/cypress/screenshots/
+/cypress/downloads/
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Build output
+*.tsbuildinfo
+.next/
+.nuxt/
+.cache/
+.temp/
+.tmp/
+
+# Debug logs
+debug.log*
+
+# Local development
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Misc
+.cache/
+.vercel/
+.netlify/
+.svelte-kit/
+.astro/
+
+# IDE specific files
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# System Files
+.DS_Store
+Thumbs.db
