@@ -16,6 +16,11 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { ref } from 'vue'
 import type { Prompt } from '@/types/prompt'
 
+const emits = defineEmits<{
+  (e: 'select-chat', id: string): void
+  (e: 'new-chat'): void
+}>()
+
 const collapsed = ref<boolean>(false)
 function toggleCollapse() {
   collapsed.value = !collapsed.value
@@ -23,7 +28,6 @@ function toggleCollapse() {
 
 const { prompts, isLoading } = usePrompts()
 const promptsList: Prompt[] = prompts || []
-console.log('Prompts loaded:', promptsList)
 const { favourites, isLoading: isFavoritesLoading } = useFavoritePrompt()
 </script>
 <template>
@@ -87,7 +91,7 @@ const { favourites, isLoading: isFavoritesLoading } = useFavoritePrompt()
               :key="`fav-${fav.id}`"
               variant="ghost"
               class="flex items-center w-full p-2.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors duration-200 group/item"
-              @click="$emit('select-chat', fav.id)"
+              @click="emits('select-chat', fav.id)"
             >
               <div class="p-1.5 rounded-md bg-amber-100/80 dark:bg-amber-900/50 text-amber-700 dark:text-amber-400 group-hover/item:bg-amber-200/80 dark:group-hover/item:bg-amber-800/50 transition-colors">
                 <StarIcon class="h-3.5 w-3.5" />
@@ -136,7 +140,7 @@ const { favourites, isLoading: isFavoritesLoading } = useFavoritePrompt()
               :key="`chat-${chat.id}`"
               variant="ghost"
               class="flex items-center w-full p-2.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors duration-200 group/item"
-              @click="$emit('select-chat', chat.id)"
+              @click="emits('select-chat', chat.id)"
             >
               <div class="p-1.5 rounded-md bg-blue-100/80 dark:bg-blue-900/50 text-blue-700 dark:text-blue-400 group-hover/item:bg-blue-200/80 dark:group-hover/item:bg-blue-800/50 transition-colors">
                 <ChatIcon class="h-3.5 w-3.5" />
@@ -167,7 +171,7 @@ const { favourites, isLoading: isFavoritesLoading } = useFavoritePrompt()
           'transform hover:scale-[1.02] active:scale-95 transition-transform duration-200 font-medium'
         ]"
         style="font-family: var(--font-sans)"
-        @click="$emit('new-chat')"
+        @click="emits('new-chat')"
       >
         <span class="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform -translate-x-full group-hover:translate-x-full"></span>
 

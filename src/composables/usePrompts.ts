@@ -2,29 +2,16 @@ import { usePromptStore } from '@/stores/promptStore'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
 import { getPrompts, createPrompt, updatePrompt } from '@/services/prompt'
 import type { NewPrompt, Prompt } from '@/types/prompt'
-import { computed, watch } from 'vue'
-import { useAuthStore } from '@/stores/authStore'
+import { watch } from 'vue'
 
 export function usePrompts() {
   const queryClient = useQueryClient()
   const promptStore = usePromptStore()
-  const authStore = useAuthStore()
-
-  const isAuth = computed(() => authStore.isAuthenticated)
 
   const promptsQuery = useQuery({
     queryKey: ['prompts'],
     queryFn: getPrompts,
-    enabled: isAuth,
   })
-
-  watch(
-    () => isAuth.value,
-    (ok: boolean) => {
-      if (ok) promptsQuery.refetch()
-    },
-    { immediate: true }
-  )
 
   watch(
     () => promptsQuery.data.value?.prompts,

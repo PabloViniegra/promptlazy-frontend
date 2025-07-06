@@ -1,32 +1,19 @@
 import { getFavouritesPrompts, toggleFavouritePrompt } from '@/services/prompt'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
 import { usePromptStore } from '@/stores/promptStore'
-import { computed, watch } from 'vue'
+import { watch } from 'vue'
 import { storeToRefs } from 'pinia'
-import { useAuthStore } from '@/stores/authStore'
 
 export function useFavoritePrompt() {
   const queryClient = useQueryClient()
   const promptStore = usePromptStore()
-  const authStore = useAuthStore()
-
-  const isAuth = computed(() => authStore.isAuthenticated)
 
   const { favourites } = storeToRefs(promptStore)
 
   const favouritesQuery = useQuery({
     queryKey: ['favourites'],
     queryFn: getFavouritesPrompts,
-    enabled: isAuth,
   })
-
-  watch(
-    () => isAuth.value,
-    (ok: boolean) => {
-      if (ok) favouritesQuery.refetch()
-    },
-    { immediate: true }
-  )
 
   watch(
     () => favouritesQuery.data,

@@ -1,23 +1,37 @@
 import { getPrompt } from '@/services/prompt'
 import { usePromptStore } from '@/stores/promptStore'
 import { useQuery } from '@tanstack/vue-query'
-import { watch } from 'vue'
+import { computed, watch, type Ref } from 'vue'
 
-
-export function usePrompt(id: string) {
+export function usePrompt(idRef: Ref<string | null>) {
   const promptStore = usePromptStore()
 
   const prompByIdQuery = useQuery({
-    queryKey: ['prompt', id],
-    queryFn: () => getPrompt(id),
-    enabled: !!id
+    queryKey: ['prompt', idRef.value],
+    queryFn: () => getPrompt(idRef.value!),
+    enabled: computed(() => Boolean(idRef.value)),
+    staleTime: 0,
   })
 
-  watch(prompByIdQuery.data, (newPrompt) => {
-    if (newPrompt) {
-      promptStore.setCurrentPrompt(newPrompt)
-    }
-  }, { immediate: true })
+  watch(
+    idRef,
+    (newId) => {
+      promptStore.setCurrentPrompt(null)
+      if (newId) {
+        prompByIdQuery.refetch()
+      }
+    },
+    { immediate: true }
+  )
+  watch(
+    prompByIdQuery.data,
+    (newPrompt) => {
+      if (newPrompt) {
+        promptStore.setCurrentPrompt(newPrompt)
+      }
+    },
+    { immediate: true }
+  )
 
   watch(prompByIdQuery.isError, (isError) => {
     if (isError) {
@@ -27,6 +41,6 @@ export function usePrompt(id: string) {
 
   return {
     prompt: promptStore.currentPrompt,
-    isLoading: prompByIdQuery.isLoading,
+    isLoading: prompByIdQuery.isLoading || prompByIdQuery.isPending || prompByIdQuery.isFetching,
   }
 }

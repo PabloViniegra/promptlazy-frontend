@@ -29,7 +29,7 @@ function handleSubmit(e: Event) {
   if (!text) return
 
   input.value = ''
-  
+
   sendMessage({
     content: text,
     onError: (error) => {
@@ -40,15 +40,19 @@ function handleSubmit(e: Event) {
 </script>
 <template>
   <div class="flex flex-col h-full bg-background text-foreground font-sans">
-    <header class="border-b border-border bg-card py-4 shadow-sm">
-      <div class="container mx-auto px-4 max-w-4xl">
-        <h1 class="text-xl font-bold text-foreground flex items-center gap-2 font-heading">
-          <BotIcon class="w-5 h-5 text-primary" />
-          Asistente de PromptLazy
-        </h1>
+    <header class="border-b border-border bg-card shadow-sm rounded-t-lg">
+      <div class="container mx-auto px-6 py-4 max-w-4xl">
+        <div class="flex items-center">
+          <div class="flex items-center bg-primary/5 rounded-full px-4 py-2.5 border border-primary/10">
+            <BotIcon class="size-5 text-primary mr-3 flex-shrink-0" />
+            <h1 class="text-base font-semibold text-foreground/90 tracking-tight">
+              Asistente de PromptLazy
+            </h1>
+          </div>
+        </div>
       </div>
     </header>
-    <div class="flex-1 overflow-y-auto">
+    <div class="flex-1 overflow-y-auto rounded-md">
       <div class="container mx-auto px-4 py-6 max-w-4xl">
         <div class="space-y-6">
             <template v-for="msg in messages" :key="msg.id">
