@@ -1,12 +1,11 @@
 <script setup lang="ts">
-import { watch, computed } from 'vue'
+import { watch } from 'vue'
 import { storeToRefs } from 'pinia'
-import type { Prompt } from '@/types/prompt'
 import { useAppStore } from '@/stores/appStore'
 import { usePrompt } from '@/composables/usePrompt'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Copy, Sparkles, Pencil, Trash2, MessageSquare } from 'lucide-vue-next'
+import { Copy, Sparkles, Pencil, Trash2, MessageSquare, Star } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 
@@ -17,16 +16,8 @@ watch(selectedPromptId, (newId: string | null) => {
   console.log('selectedPromptId cambió:', newId)
 })
 
-const { prompt: promptRef, isLoading } = usePrompt(selectedPromptId)
+const { prompt, isLoading } = usePrompt(selectedPromptId)
 
-const currentPrompt = computed<Prompt | null>(() => {
-  if (!promptRef) return null
-  return { ...promptRef }
-})
-
-watch(currentPrompt, (newPrompt) => {
-  console.log('currentPrompt actualizado:', newPrompt?.id)
-}, { immediate: true })
 
 const copyToClipboard = async (text: string) => {
   try {
@@ -39,11 +30,31 @@ const copyToClipboard = async (text: string) => {
 
 <template>
   <div class="p-6 max-w-4xl mx-auto space-y-6">
-    <div v-if="!isLoading && currentPrompt" class="flex justify-between items-center mb-6 px-2">
+    <div v-if="!isLoading && prompt" class="flex justify-between items-center mb-6 px-2">
       <h2 class="text-2xl font-bold text-foreground">
         Vista de chat
       </h2>
       <div class="flex items-center space-x-2">
+        <Button
+          variant="ghost"
+          size="sm"
+          :class="[
+            'h-8 px-3 transition-all duration-200 border',
+            prompt.is_favorite 
+              ? 'bg-amber-50 border-amber-200 text-amber-600 hover:bg-amber-100 hover:text-amber-700' 
+              : 'border-muted-foreground/20 text-muted-foreground hover:bg-muted/50 hover:text-foreground hover:border-muted-foreground/30'
+          ]"
+          @click="$emit('toggle-favorite')"
+        >
+          <template v-if="prompt.is_favorite">
+            <Star class="h-4 w-4 mr-1.5 fill-amber-500 text-amber-500" />
+            <span class="font-medium">Favorito</span>
+          </template>
+          <template v-else>
+            <Star class="h-4 w-4 mr-1.5" />
+            <span>Añadir a favoritos</span>
+          </template>
+        </Button>
         <Button
           variant="ghost"
           size="sm"
@@ -86,7 +97,7 @@ const copyToClipboard = async (text: string) => {
         <Skeleton class="h-32 w-full rounded-lg bg-muted/40" />
       </div>
     </template>
-    <template v-else-if="currentPrompt">
+    <template v-else-if="prompt">
       <Card>
         <CardHeader class="pb-3">
           <div class="flex items-center justify-between">
@@ -98,7 +109,7 @@ const copyToClipboard = async (text: string) => {
               variant="ghost"
               size="icon"
               class="h-8 w-8 text-muted-foreground hover:text-foreground"
-              @click="copyToClipboard(currentPrompt.original_prompt)"
+              @click="copyToClipboard(prompt.original_prompt)"
             >
               <Copy class="h-4 w-4" />
               <span class="sr-only">Copiar al portapapeles</span>
@@ -106,7 +117,7 @@ const copyToClipboard = async (text: string) => {
           </div>
         </CardHeader>
         <CardContent>
-          <p class="whitespace-pre-wrap text-foreground/90">{{ currentPrompt.original_prompt }}</p>
+          <p class="whitespace-pre-wrap text-foreground/90">{{ prompt.original_prompt }}</p>
         </CardContent>
       </Card>
 
@@ -121,7 +132,7 @@ const copyToClipboard = async (text: string) => {
               variant="ghost"
               size="icon"
               class="h-8 w-8 text-muted-foreground hover:text-foreground"
-              @click="copyToClipboard(currentPrompt.optimized_prompt)"
+              @click="copyToClipboard(prompt.optimized_prompt)"
             >
               <Copy class="h-4 w-4" />
               <span class="sr-only">Copiar al portapapeles</span>
@@ -129,7 +140,7 @@ const copyToClipboard = async (text: string) => {
           </div>
         </CardHeader>
         <CardContent>
-          <p class="whitespace-pre-wrap text-foreground/90">{{ currentPrompt.optimized_prompt }}</p>
+          <p class="whitespace-pre-wrap text-foreground/90">{{ prompt.optimized_prompt }}</p>
         </CardContent>
       </Card>
     </template>
