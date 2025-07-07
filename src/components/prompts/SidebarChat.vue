@@ -7,8 +7,10 @@ import {
   Star as StarIcon,
   ChevronLeft,
   ChevronRight,
-  History as HistoryIcon
+  History as HistoryIcon,
+  Loader2
 } from 'lucide-vue-next'
+import { useFavoritePrompt } from '@/composables/useFavoritePrompt'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -26,8 +28,9 @@ function toggleCollapse() {
 }
 
 const { prompts, isLoading } = usePrompts()
+const { isToggling } = useFavoritePrompt()
 const favourites = computed(() => prompts.value?.filter(p => p.is_favorite) || [])
-const isFavoritesLoading = isLoading
+const isFavoritesLoading = isLoading || isToggling
 </script>
 <template>
   <aside
@@ -90,10 +93,16 @@ const isFavoritesLoading = isLoading
               :key="`fav-${fav.id}`"
               variant="ghost"
               class="flex items-center w-full p-2.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors duration-200 group/item"
+              :disabled="isToggling"
               @click="emits('select-chat', fav.id)"
             >
               <div class="p-1.5 rounded-md bg-amber-100/80 dark:bg-amber-900/50 text-amber-700 dark:text-amber-400 group-hover/item:bg-amber-200/80 dark:group-hover/item:bg-amber-800/50 transition-colors">
-                <StarIcon class="h-3.5 w-3.5" />
+                <template v-if="isToggling">
+                  <Loader2 class="h-3.5 w-3.5 animate-spin" />
+                </template>
+                <template v-else>
+                  <StarIcon class="h-3.5 w-3.5" />
+                </template>
               </div>
               <span v-if="!collapsed" class="ml-3 text-sm font-medium text-slate-700 dark:text-slate-200 truncate text-left flex-1">
                 {{ fav.original_prompt || '— sin título —' }}

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, h, toRef } from 'vue'
-import { Copy, Sparkles, Pencil, Trash2, MessageSquare, Star, Info, Check } from 'lucide-vue-next'
+import { Copy, Sparkles, Pencil, Trash2, MessageSquare, Star, Info, Check, Loader2 } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import { toast } from 'vue-sonner'
 import { formatOptimizedPrompt } from '@/utils/utils'
@@ -15,19 +15,23 @@ import {
 import { usePrompt } from '@/composables/usePrompt'
 import type { OptimizedPromptSections } from '@/types/prompt'
 import { useFavoritePrompt } from '@/composables/useFavoritePrompt'
+import { useQueryClient } from '@tanstack/vue-query'
 
 interface Props {
   promptId: string | null
 }
-
+const qc = useQueryClient()
 const props = defineProps<Props>()
 const idRef = toRef(props, 'promptId')
 const { prompt, isLoading } = usePrompt(idRef)
-const { toggleFavourite } = useFavoritePrompt()
+const { toggleFavourite, isToggling } = useFavoritePrompt()
 
-const handleToggleFavorite = (promptId: string) => {
+const isFavorite = computed(() => prompt.value?.is_favorite || false)
+
+const handleToggleFavorite = async (promptId: string) => {
   if (!prompt.value) return
-  toggleFavourite(promptId)
+  await toggleFavourite(promptId, !isFavorite.value)
+  qc.invalidateQueries({ queryKey: ['prompt', promptId] })
 }
 
 const copyToClipboard = async (text: string) => {
@@ -102,37 +106,39 @@ const formattedOptimizedPrompt = computed<Partial<OptimizedPromptSections>>(() =
           size="sm"
           :class="[
             'h-8 px-3 transition-all duration-200 border flex items-center',
-            prompt?.is_favorite
+            isFavorite
               ? [
                   'bg-amber-50 dark:bg-amber-900/30',
                   'border-amber-200 dark:border-amber-800/70',
-                  'text-amber-700 dark:text-amber-300',
-                  'hover:bg-amber-100 dark:hover:bg-amber-900/50',
-                  'hover:border-amber-300 dark:hover:border-amber-700',
-                  'hover:text-amber-800 dark:hover:text-amber-200',
-                  'focus-visible:ring-2 focus-visible:ring-amber-500',
-                  'shadow-sm dark:shadow-amber-900/20',
-                  'dark:shadow-sm'
+                  'text-amber-600 dark:text-amber-400',
+                  'hover:bg-amber-100 dark:hover:bg-amber-900/40',
+                  'dark:shadow-sm',
                 ]
               : [
-                  'border-muted-foreground/20 dark:border-muted-foreground/30',
-                  'text-muted-foreground dark:text-muted-foreground/90',
-                  'hover:bg-muted/50 dark:hover:bg-muted/70',
-                  'hover:text-foreground dark:hover:text-foreground/90',
-                  'hover:border-muted-foreground/30 dark:hover:border-muted-foreground/40',
-                  'focus-visible:ring-2 focus-visible:ring-ring',
-                  'dark:shadow-sm'
-                ]
+                  'bg-transparent',
+                  'border-border/60 dark:border-muted/50',
+                  'text-muted-foreground/80 dark:text-muted-foreground/70',
+                  'hover:bg-muted/50 hover:border-border/80 dark:hover:bg-muted/30 dark:hover:border-muted/60',
+                ],
+            'group',
+            isToggling ? 'opacity-70 cursor-not-allowed' : ''
           ]"
+          :disabled="!prompt || isToggling"
           @click.stop="handleToggleFavorite(prompt.id)"
         >
-          <template v-if="prompt?.is_favorite">
-            <Star class="size-4 mr-1.5 flex-shrink-0 fill-amber-500 dark:fill-amber-400 text-amber-500 dark:text-amber-400" />
-            <span class="font-medium whitespace-nowrap">Favorito</span>
+          <template v-if="isFavorite">
+            <template v-if="!isToggling">
+              <Star class="size-4 mr-1.5 flex-shrink-0 fill-amber-500 dark:fill-amber-400 text-amber-500 dark:text-amber-400" />
+              <span class="font-medium whitespace-nowrap">Favorito</span>
+            </template>
+            <Loader2 v-else class="h-4 w-4 mr-1.5 animate-spin" />
           </template>
           <template v-else>
-            <Star class="size-4 mr-1.5 flex-shrink-0 text-muted-foreground/80 dark:text-muted-foreground/70" />
-            <span class="whitespace-nowrap">Añadir a favoritos</span>
+            <template v-if="!isToggling">
+              <Star class="size-4 mr-1.5 flex-shrink-0 text-muted-foreground/80 dark:text-muted-foreground/70" />
+              <span class="whitespace-nowrap">Añadir a favoritos</span>
+            </template>
+            <Loader2 v-else class="h-4 w-4 mr-1.5 animate-spin" />
           </template>
         </Button>
         <Button

@@ -3,7 +3,7 @@ import { toggleFavouritePrompt } from '@/services/prompt'
 import { usePrompts } from './usePrompts'
 
 export function useFavoritePrompt() {
-  const { prompts, isLoading, refetch } = usePrompts()
+  const { isLoading, refetch } = usePrompts()
 
   const { mutate: toggleFavourite, isPending: isToggling } = useMutation({
     mutationFn: async ({ promptId, isFavorite }: { promptId: string; isFavorite: boolean }) => {
@@ -15,18 +15,12 @@ export function useFavoritePrompt() {
     },
   })
 
-  const isFavorited = (promptId: string) => {
-    return prompts.value?.some(p => p.id === promptId && p.is_favorite) || false
-  }
-
   return {
     isLoading,
-    toggleFavourite: (promptId: string) => {
-      const isFavorite = !isFavorited(promptId)
+    toggleFavourite: (promptId: string, isFavorite: boolean) => {
       toggleFavourite({ promptId, isFavorite })
       return isFavorite
     },
     isToggling,
-    isFavorited,
   }
 }
