@@ -2,11 +2,13 @@ import { usePromptStore } from '@/stores/promptStore'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
 import { getPrompts, createPrompt, updatePrompt } from '@/services/prompt'
 import type { NewPrompt, Prompt } from '@/types/prompt'
-import { watch } from 'vue'
+import { computed, watch } from 'vue'
+import { storeToRefs } from 'pinia'
 
 export function usePrompts() {
   const queryClient = useQueryClient()
   const promptStore = usePromptStore()
+  const { prompts } = storeToRefs(promptStore)
 
   const promptsQuery = useQuery({
     queryKey: ['prompts'],
@@ -54,7 +56,7 @@ export function usePrompts() {
   })
 
   return {
-    prompts: promptStore.prompts,
+    prompts: computed(() => prompts.value),
     isLoading: promptsQuery.isLoading || promptsQuery.isPending || promptsQuery.isFetching,
     createPrompt: (newPrompt: NewPrompt) => createPromptMutation.mutateAsync(newPrompt),
     isCreating: createPromptMutation.isPending,

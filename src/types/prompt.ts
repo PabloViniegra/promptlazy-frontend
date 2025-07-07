@@ -15,3 +15,10 @@ export interface NewPrompt {
 export interface PromptResponse {
   prompts: Prompt[];
 }
+
+export interface OptimizedPromptSections {
+  prompt_mejorado?: string;
+  'explicación_de_los_cambios'?: string;
+  prompt?: string;
+  [key: string]: string | undefined;
+}

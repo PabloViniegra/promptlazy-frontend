@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 
 export const useAppStore = defineStore('app', () => {
   // State
@@ -7,9 +7,10 @@ export const useAppStore = defineStore('app', () => {
   const selectedPromptId = ref<string | null>(null)
 
   // Actions
-  function setSelectedPrompt(promptId: string | null) {
-    selectedPromptId.value = promptId
+  function setSelectedPrompt(promptId: string) {
     action.value = 'view'
+    selectedPromptId.value = promptId
+    console.log(`En el store el selectedPromptId es: ${selectedPromptId.value}`)
   }
 
   function resetAction() {
@@ -18,8 +19,8 @@ export const useAppStore = defineStore('app', () => {
   }
 
   return {
-    action,
-    selectedPromptId,
+    action: computed(() => action.value),
+    selectedPromptId: computed(() => selectedPromptId.value),
     resetAction,
     setSelectedPrompt
   }
