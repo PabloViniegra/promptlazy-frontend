@@ -16,22 +16,63 @@ import { usePrompt } from '@/composables/usePrompt'
 import type { OptimizedPromptSections } from '@/types/prompt'
 import { useFavoritePrompt } from '@/composables/useFavoritePrompt'
 import { useQueryClient } from '@tanstack/vue-query'
+import { usePromptStore } from '@/stores/promptStore'
 
 interface Props {
   promptId: string | null
 }
 const qc = useQueryClient()
+const promptStore = usePromptStore()
 const props = defineProps<Props>()
 const idRef = toRef(props, 'promptId')
 const { prompt, isLoading } = usePrompt(idRef)
 const { toggleFavourite, isToggling } = useFavoritePrompt()
 
-const isFavorite = computed(() => prompt.value?.is_favorite || false)
 
 const handleToggleFavorite = async (promptId: string) => {
   if (!prompt.value) return
-  await toggleFavourite(promptId, !isFavorite.value)
-  qc.invalidateQueries({ queryKey: ['prompt', promptId] })
+
+  const currentFavoriteState = prompt.value.is_favorite
+  const newFavoriteState = !currentFavoriteState
+
+  if (prompt.value) {
+    promptStore.setCurrentPrompt({
+      ...prompt.value,
+      is_favorite: newFavoriteState
+    })
+  }
+
+  try {
+    const success = await toggleFavourite(promptId, newFavoriteState)
+
+    if (!success) {
+      if (prompt.value) {
+        promptStore.setCurrentPrompt({
+          ...prompt.value,
+          is_favorite: currentFavoriteState
+        })
+      }
+      throw new Error('No se pudo actualizar el estado de favorito')
+    }
+
+    await Promise.all([
+      qc.invalidateQueries({ queryKey: ['prompt', promptId] }),
+      qc.invalidateQueries({ queryKey: ['prompts'] })
+    ])
+
+  } catch (err) {
+    console.error('Error al actualizar favorito:', err)
+    toast.error('Error', {
+      description: 'No se pudo actualizar el estado de favorito',
+      duration: 2000,
+    })
+    if (prompt.value) {
+      promptStore.setCurrentPrompt({
+        ...prompt.value,
+        is_favorite: currentFavoriteState
+      })
+    }
+  }
 }
 
 const copyToClipboard = async (text: string) => {
@@ -106,7 +147,7 @@ const formattedOptimizedPrompt = computed<Partial<OptimizedPromptSections>>(() =
           size="sm"
           :class="[
             'h-8 px-3 transition-all duration-200 border flex items-center',
-            isFavorite
+            prompt.is_favorite
               ? [
                   'bg-amber-50 dark:bg-amber-900/30',
                   'border-amber-200 dark:border-amber-800/70',
@@ -126,7 +167,7 @@ const formattedOptimizedPrompt = computed<Partial<OptimizedPromptSections>>(() =
           :disabled="!prompt || isToggling"
           @click.stop="handleToggleFavorite(prompt.id)"
         >
-          <template v-if="isFavorite">
+          <template v-if="prompt.is_favorite">
             <template v-if="!isToggling">
               <Star class="size-4 mr-1.5 flex-shrink-0 fill-amber-500 dark:fill-amber-400 text-amber-500 dark:text-amber-400" />
               <span class="font-medium whitespace-nowrap">Favorito</span>

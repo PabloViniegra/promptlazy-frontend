@@ -14,7 +14,7 @@ import { useFavoritePrompt } from '@/composables/useFavoritePrompt'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 
 
 const emits = defineEmits<{
@@ -28,9 +28,7 @@ function toggleCollapse() {
 }
 
 const { prompts, isLoading } = usePrompts()
-const { isToggling } = useFavoritePrompt()
-const favourites = computed(() => prompts.value?.filter(p => p.is_favorite) || [])
-const isFavoritesLoading = isLoading || isToggling
+const { isToggling, favourites, isLoading: isFavoritesLoading } = useFavoritePrompt()
 </script>
 <template>
   <aside
