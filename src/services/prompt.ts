@@ -26,7 +26,9 @@ export async function getFavouritesPrompts(): Promise<PromptResponse> {
   return data
 }
 
-export async function toggleFavouritePrompt(id: string): Promise<Prompt> {
-  const { data } = await api.patch<Prompt>(`/prompt/${id}/favorite`)
+export async function toggleFavouritePrompt(id: string, favorite: boolean): Promise<Prompt> {
+  const { data } = await api.patch<Prompt>(`/prompt/${id}/favorite`, null, {
+    params: { favorite }
+  })
   return data
 }

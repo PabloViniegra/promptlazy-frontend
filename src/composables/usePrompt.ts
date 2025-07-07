@@ -43,6 +43,7 @@ export function usePrompt(idRef: Ref<string | null>) {
 
   return {
     prompt: computed(() => currentPrompt.value),
-    isLoading: prompByIdQuery.isLoading || prompByIdQuery.isFetching
+    isLoading: prompByIdQuery.isLoading || prompByIdQuery.isFetching,
+    refetch: prompByIdQuery.refetch
   }
 }

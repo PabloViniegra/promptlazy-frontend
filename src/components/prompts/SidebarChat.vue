@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { usePrompts } from '@/composables/usePrompts'
-import { useFavoritePrompt } from '@/composables/useFavoritePrompt'
 import {
   Plus as PlusIcon,
   MessageSquare as ChatIcon,
@@ -13,8 +12,8 @@ import {
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { ref } from 'vue'
-import type { Prompt } from '@/types/prompt'
+import { ref, computed } from 'vue'
+
 
 const emits = defineEmits<{
   (e: 'select-chat', id: string): void
@@ -27,8 +26,8 @@ function toggleCollapse() {
 }
 
 const { prompts, isLoading } = usePrompts()
-const promptsList: Prompt[] = prompts || []
-const { favourites, isLoading: isFavoritesLoading } = useFavoritePrompt()
+const favourites = computed(() => prompts.value?.filter(p => p.is_favorite) || [])
+const isFavoritesLoading = isLoading
 </script>
 <template>
   <aside
@@ -134,9 +133,9 @@ const { favourites, isLoading: isFavoritesLoading } = useFavoritePrompt()
               <Skeleton class="h-4 rounded bg-muted/30" :class="collapsed ? 'w-8 mx-auto' : 'w-full'" />
             </div>
           </template>
-          <template v-else-if="promptsList.length > 0">
+          <template v-else-if="prompts.length > 0">
             <Button
-              v-for="chat in promptsList"
+              v-for="chat in prompts"
               :key="`chat-${chat.id}`"
               variant="ghost"
               class="flex items-center w-full p-2.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors duration-200 group/item"

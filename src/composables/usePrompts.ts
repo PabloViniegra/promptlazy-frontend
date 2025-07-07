@@ -63,5 +63,6 @@ export function usePrompts() {
     updatePrompt: (id: string, updatedPrompt: NewPrompt) =>
       updatePromptMutation.mutate({ id, updatedPrompt }),
     isUpdating: updatePromptMutation.isPending,
+    refetch: promptsQuery.refetch,
   }
 }

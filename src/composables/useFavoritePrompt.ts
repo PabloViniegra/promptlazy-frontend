@@ -1,52 +1,32 @@
-import { getFavouritesPrompts, toggleFavouritePrompt } from '@/services/prompt'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
-import { usePromptStore } from '@/stores/promptStore'
-import { watch } from 'vue'
-import { storeToRefs } from 'pinia'
+import { useMutation } from '@tanstack/vue-query'
+import { toggleFavouritePrompt } from '@/services/prompt'
+import { usePrompts } from './usePrompts'
 
 export function useFavoritePrompt() {
-  const queryClient = useQueryClient()
-  const promptStore = usePromptStore()
+  const { prompts, isLoading, refetch } = usePrompts()
 
-  const { favourites } = storeToRefs(promptStore)
-
-  const favouritesQuery = useQuery({
-    queryKey: ['favourites'],
-    queryFn: getFavouritesPrompts,
-  })
-
-  watch(
-    () => favouritesQuery.data,
-    (newFavourites) => {
-      if (newFavourites.value) {
-        promptStore.setFavourites(newFavourites.value.prompts)
-      }
+  const { mutate: toggleFavourite, isPending: isToggling } = useMutation({
+    mutationFn: async ({ promptId, isFavorite }: { promptId: string; isFavorite: boolean }) => {
+      await toggleFavouritePrompt(promptId, isFavorite)
+      return { promptId, isFavorite }
     },
-    { immediate: true }
-  )
-
-  watch(
-    () => favouritesQuery.isError,
-    (isError) => {
-      if (isError) console.error('Error cargando favoritos')
-    }
-  )
-
-
-  const toggleFavouriteMutation = useMutation({
-    mutationFn: (promptId: string) => toggleFavouritePrompt(promptId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['favourites'] })
+      refetch()
     },
-    onError: (error) => {
-      console.error('Failed to toggle favourite:', error)
-    }
   })
+
+  const isFavorited = (promptId: string) => {
+    return prompts.value?.some(p => p.id === promptId && p.is_favorite) || false
+  }
 
   return {
-    favourites,
-    isLoading: favouritesQuery.isLoading || toggleFavouriteMutation.isPending || favouritesQuery.isPending || favouritesQuery.isFetching,
-    toggleFavourite: (promptId: string) => toggleFavouriteMutation.mutate(promptId),
-    isToggling: toggleFavouriteMutation.isPending,
+    isLoading,
+    toggleFavourite: (promptId: string) => {
+      const isFavorite = !isFavorited(promptId)
+      toggleFavourite({ promptId, isFavorite })
+      return isFavorite
+    },
+    isToggling,
+    isFavorited,
   }
 }

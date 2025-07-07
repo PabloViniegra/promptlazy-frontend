@@ -17,8 +17,15 @@ export interface PromptResponse {
 }
 
 export interface OptimizedPromptSections {
+  // Formato original
   prompt_mejorado?: string;
   'explicación_de_los_cambios'?: string;
   prompt?: string;
+  
+  // Nuevo formato
+  entrada_inicial?: string;
+  entrada_mejorada?: string;
+  salida_deseada?: string;
+  
   [key: string]: string | undefined;
 }
