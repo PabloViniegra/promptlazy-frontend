@@ -1,13 +1,15 @@
 import { getPrompt } from '@/services/prompt'
 import { usePromptStore } from '@/stores/promptStore'
-import { useQuery } from '@tanstack/vue-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
 import { storeToRefs } from 'pinia'
 import { computed, watch, type Ref } from 'vue'
+import { deletePrompt } from '@/services/prompt'
 
 export function usePrompt(idRef: Ref<string | null>) {
   const promptStore = usePromptStore()
   const { currentPrompt } = storeToRefs(promptStore)
   const queryKey = computed(() => ['prompt', idRef.value])
+  const qc = useQueryClient()
 
   const prompByIdQuery = useQuery({
     queryKey: queryKey,
@@ -41,9 +43,25 @@ export function usePrompt(idRef: Ref<string | null>) {
     }
   )
 
+  const deletePromptMutation = useMutation({
+    mutationFn: async (promptId: string) => {
+      await deletePrompt(promptId)
+      return promptId
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['prompt', idRef.value] })
+      qc.invalidateQueries({ queryKey: ['prompts'] })
+    },
+    onError: (error) => {
+      console.error('Error deleting prompt:', error)
+    }
+  })
+
   return {
     prompt: computed(() => currentPrompt.value),
     isLoading: prompByIdQuery.isLoading || prompByIdQuery.isFetching,
-    refetch: prompByIdQuery.refetch
+    refetch: prompByIdQuery.refetch,
+    deletePrompt: deletePromptMutation.mutate,
+    isDeleting: deletePromptMutation.isPending
   }
 }

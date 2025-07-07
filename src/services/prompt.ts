@@ -32,3 +32,7 @@ export async function toggleFavouritePrompt(id: string, favorite: boolean): Prom
   })
   return data
 }
+
+export async function deletePrompt(id: string): Promise<void> {
+  await api.delete(`/prompt/${id}`)
+}

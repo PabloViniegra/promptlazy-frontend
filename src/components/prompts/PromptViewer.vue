@@ -13,6 +13,9 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { usePrompt } from '@/composables/usePrompt'
+import { useRouter } from 'vue-router'
+import { useModal } from '@/composables/useModal'
+import DeletePromptModal from '@/components/modals/DeletePromptModal.vue'
 import type { OptimizedPromptSections } from '@/types/prompt'
 import { useFavoritePrompt } from '@/composables/useFavoritePrompt'
 import { useQueryClient } from '@tanstack/vue-query'
@@ -25,9 +28,48 @@ const qc = useQueryClient()
 const promptStore = usePromptStore()
 const props = defineProps<Props>()
 const idRef = toRef(props, 'promptId')
-const { prompt, isLoading } = usePrompt(idRef)
+const router = useRouter()
+const { prompt, isLoading, deletePrompt, isDeleting } = usePrompt(idRef)
+const { isOpen: isDeleteModalOpen, openModal: openDeleteModal, closeModal: closeDeleteModal } = useModal()
 const { toggleFavourite, isToggling } = useFavoritePrompt()
 
+
+const handleDelete = async () => {
+  if (!idRef.value) return
+
+  try {
+    await deletePrompt(idRef.value)
+    toast.success('¡Listo!', {
+      description: 'El prompt ha sido eliminado correctamente',
+      duration: 3000,
+      style: {
+        background: 'hsl(142.1 76.2% 36.3%)',
+        color: 'white',
+        border: 'none',
+        borderRadius: '0.5rem',
+        padding: '1rem',
+        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
+      },
+    })
+    router.push('/')
+  } catch (error) {
+    toast.error('¡Ups!', {
+      description: 'No se pudo eliminar el prompt. Inténtalo de nuevo.',
+      duration: 4000,
+      style: {
+        background: 'hsl(0 84.2% 60.2%)',
+        color: 'white',
+        border: 'none',
+        borderRadius: '0.5rem',
+        padding: '1rem',
+        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
+      },
+    })
+    console.error('Error deleting prompt:', error)
+  } finally {
+    closeDeleteModal()
+  }
+}
 
 const handleToggleFavorite = async (promptId: string) => {
   if (!prompt.value) return
@@ -191,27 +233,15 @@ const formattedOptimizedPrompt = computed<Partial<OptimizedPromptSections>>(() =
           <Pencil class="size-4 mr-1.5" />
           <span>Editar</span>
         </Button>
-        <DropdownMenu>
-          <DropdownMenuTrigger as-child>
-            <Button
-              variant="ghost"
-              size="sm"
-              class="text-destructive/80 hover:text-destructive hover:bg-destructive/5 h-8 px-3 transition-colors"
-            >
-              <Trash2 class="size-4 mr-1.5" />
-              <span>Eliminar</span>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent class="w-56" align="end">
-            <DropdownMenuItem
-              class="text-destructive focus:text-destructive focus:bg-destructive/5 cursor-pointer"
-              @click="$emit('delete')"
-            >
-              <Trash2 class="size-4 mr-2" />
-              <span>Eliminar prompt</span>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <Button
+          variant="ghost"
+          size="sm"
+          class="text-destructive/80 hover:text-destructive hover:bg-destructive/5 h-8 px-3 transition-colors"
+          @click="openDeleteModal"
+        >
+          <Trash2 class="size-4 mr-1.5" />
+          <span>Eliminar</span>
+        </Button>
       </div>
     </div>
     <template v-if="isLoading">
@@ -298,15 +328,28 @@ const formattedOptimizedPrompt = computed<Partial<OptimizedPromptSections>>(() =
               <Sparkles class="h-5 w-5 text-amber-500" />
               <span>Prompt Optimizado</span>
             </CardTitle>
-            <Button
-              variant="ghost"
-              size="icon"
-              class="h-8 w-8 text-muted-foreground hover:text-foreground"
-              @click="copyToClipboard(prompt.optimized_prompt)"
-            >
-              <Copy class="h-4 w-4" />
-              <span class="sr-only">Copiar al portapapeles</span>
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger as-child>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  class="h-8 w-8 text-muted-foreground hover:text-foreground"
+                >
+                  <Copy class="h-4 w-4" />
+                  <span class="sr-only">Copiar al portapapeles</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent class="w-56" align="end">
+                <DropdownMenuItem @click="copyToClipboard(prompt.optimized_prompt)">
+                  <Copy class="mr-2 h-4 w-4" />
+                  <span>Copiar</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem @click="openDeleteModal" class="text-destructive focus:text-destructive">
+                  <Trash2 class="mr-2 h-4 w-4" />
+                  <span>Eliminar</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </CardHeader>
         <CardContent>
@@ -399,4 +442,10 @@ const formattedOptimizedPrompt = computed<Partial<OptimizedPromptSections>>(() =
       </div>
     </template>
   </div>
+  <DeletePromptModal
+    :is-open="isDeleteModalOpen"
+    :is-deleting="isDeleting"
+    @close="closeDeleteModal"
+    @confirm="handleDelete"
+  />
 </template>
