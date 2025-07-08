@@ -45,9 +45,6 @@ async function onLogin() {
         <Label for="password-login" class="text-sm font-medium text-foreground">
           Contraseña
         </Label>
-        <a href="#" class="text-xs font-medium text-accent hover:text-accent/80 transition-colors">
-          ¿Olvidaste tu contraseña?
-        </a>
       </div>
       <div class="relative">
         <Input
