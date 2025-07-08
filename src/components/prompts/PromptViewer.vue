@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { computed, h, toRef } from 'vue'
+import { computed, h, ref, toRef } from 'vue'
 import { Copy, Sparkles, Pencil, Trash2, MessageSquare, Star, Info, Check, Loader2 } from 'lucide-vue-next'
+import { getPrompt } from '@/services/prompt'
 import { Button } from '@/components/ui/button'
 import { toast } from 'vue-sonner'
 import { formatOptimizedPrompt } from '@/utils/utils'
@@ -29,7 +30,10 @@ const promptStore = usePromptStore()
 const props = defineProps<Props>()
 const idRef = toRef(props, 'promptId')
 const router = useRouter()
-const { prompt, isLoading, deletePrompt, isDeleting } = usePrompt(idRef)
+const { prompt, isLoading, deletePrompt, isDeleting, updatePrompt, isUpdating, refetch } = usePrompt(idRef)
+const isEditing = ref(false)
+const editedPrompt = ref('')
+const isOptimizedPromptLoading = ref(false)
 const { isOpen: isDeleteModalOpen, openModal: openDeleteModal, closeModal: closeDeleteModal } = useModal()
 const { toggleFavourite, isToggling } = useFavoritePrompt()
 
@@ -68,6 +72,89 @@ const handleDelete = async () => {
     console.error('Error deleting prompt:', error)
   } finally {
     closeDeleteModal()
+  }
+}
+
+const handleEditClick = () => {
+  if (!prompt.value) return
+  isEditing.value = true
+  editedPrompt.value = prompt.value.original_prompt
+}
+
+const handleSaveEdit = async () => {
+  if (!prompt.value || !editedPrompt.value.trim()) return
+
+  try {
+    // Activar el estado de carga
+    isOptimizedPromptLoading.value = true
+    
+    // Actualizar el prompt original inmediatamente para feedback visual
+    promptStore.setCurrentPrompt({
+      ...prompt.value,
+      original_prompt: editedPrompt.value
+    })
+    
+    // Realizar la actualización en el servidor
+    await updatePrompt({
+      promptId: prompt.value.id,
+      prompt: { prompt: editedPrompt.value }
+    })
+    
+    // Forzar la recarga del prompt optimizado
+    await refetch()
+    
+    // Asegurarse de que tenemos los datos más recientes
+    const updatedPrompt = await getPrompt(prompt.value.id)
+    if (updatedPrompt) {
+      promptStore.setCurrentPrompt(updatedPrompt)
+    }
+
+    toast.success('¡Listo!', {
+      description: 'El prompt ha sido actualizado correctamente',
+      duration: 3000,
+      style: {
+        background: 'hsl(142.1 76.2% 36.3%)',
+        color: 'white',
+        border: 'none',
+        borderRadius: '0.5rem',
+        padding: '1rem',
+        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
+      },
+    })
+
+    isEditing.value = false
+    // Pequeño retraso para asegurar que la UI se actualice correctamente
+    setTimeout(() => {
+      isOptimizedPromptLoading.value = false
+    }, 100)
+  } catch (error) {
+    toast.error('¡Error!', {
+      description: 'No se pudo actualizar el prompt. Inténtalo de nuevo.',
+      duration: 4000,
+      style: {
+        background: 'hsl(0 84.2% 60.2%)',
+        color: 'white',
+        border: 'none',
+        borderRadius: '0.5rem',
+        padding: '1rem',
+        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
+      },
+    })
+    console.error('Error updating prompt:', error)
+  }
+}
+
+const handleCancelEdit = () => {
+  isEditing.value = false
+  editedPrompt.value = ''
+}
+
+const handleKeyDown = (e: KeyboardEvent) => {
+  if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+    e.preventDefault()
+    handleSaveEdit()
+  } else if (e.key === 'Escape') {
+    handleCancelEdit()
   }
 }
 
@@ -228,7 +315,7 @@ const formattedOptimizedPrompt = computed<Partial<OptimizedPromptSections>>(() =
           variant="ghost"
           size="sm"
           class="text-foreground/70 hover:text-foreground hover:bg-muted/50 h-8 px-3 transition-colors"
-          @click="$emit('edit')"
+          @click="handleEditClick"
         >
           <Pencil class="size-4 mr-1.5" />
           <span>Editar</span>
@@ -301,8 +388,19 @@ const formattedOptimizedPrompt = computed<Partial<OptimizedPromptSections>>(() =
         <CardHeader class="pb-3">
           <div class="flex items-center justify-between">
             <CardTitle class="flex items-center gap-2 text-lg font-medium">
-              <MessageSquare class="h-5 w-5 text-muted-foreground" />
-              <span>Prompt Original</span>
+              <MessageSquare class="h-5 w-5 text-blue-500" />
+              <span>Prompt original</span>
+              <Button
+                v-if="!isEditing"
+                @click="handleEditClick"
+                variant="ghost"
+                size="icon"
+                class="h-7 w-7 ml-1 text-muted-foreground hover:text-foreground"
+                :disabled="isUpdating"
+              >
+                <Pencil class="h-3.5 w-3.5" />
+                <span class="sr-only">Editar prompt</span>
+              </Button>
             </CardTitle>
             <Button
               variant="ghost"
@@ -316,7 +414,62 @@ const formattedOptimizedPrompt = computed<Partial<OptimizedPromptSections>>(() =
           </div>
         </CardHeader>
         <CardContent>
-          <p class="whitespace-pre-wrap text-foreground/90 font-sans">
+          <div v-if="isEditing" class="space-y-3">
+            <div class="relative group">
+              <div class="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-cyan-400 rounded-lg opacity-75 group-hover:opacity-100 transition duration-200 blur-sm"></div>
+              <div class="relative bg-background rounded-lg p-0.5">
+                <div class="relative">
+                  <div class="absolute inset-0.5 bg-gradient-to-br from-blue-500/20 to-cyan-400/20 rounded-md"></div>
+                  <textarea
+                    v-model="editedPrompt"
+                    @keydown="handleKeyDown"
+                    class="relative w-full min-h-[150px] p-4 rounded-md border border-blue-500/30 bg-background/95 backdrop-blur-sm text-foreground font-mono text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 transition-colors resize-none"
+                    :class="{ 'opacity-70': isUpdating }"
+                    :disabled="isUpdating"
+                    autofocus
+                    spellcheck="false"
+                    placeholder="Escribe tu prompt aquí..."
+                  />
+                </div>
+                <div class="absolute right-3 bottom-3 flex gap-2 z-10">
+                  <Button
+                    @click="handleCancelEdit"
+                    variant="outline"
+                    size="sm"
+                    :disabled="isUpdating"
+                    class="h-8 text-xs border-border/50 bg-background/80 backdrop-blur-sm hover:bg-background/90 transition-all"
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    @click="handleSaveEdit"
+                    size="sm"
+                    :disabled="!editedPrompt.trim() || isUpdating"
+                    class="h-8 text-xs bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white shadow-md shadow-blue-500/20 transition-all"
+                  >
+                    <span v-if="isUpdating" class="flex items-center">
+                      <Loader2 class="mr-2 h-3 w-3 animate-spin" />
+                      Guardando...
+                    </span>
+                    <span v-else class="flex items-center">
+                      <Check class="mr-1.5 h-3.5 w-3.5" />
+                      Guardar cambios
+                    </span>
+                  </Button>
+                </div>
+              </div>
+            </div>
+            <div class="flex items-center justify-between px-1">
+              <p class="text-xs text-muted-foreground flex items-center">
+                <Info class="h-3 w-3 mr-1.5 text-blue-500" />
+                Presiona <kbd class="mx-1 px-1.5 py-0.5 text-xs rounded bg-muted border border-border font-medium">Ctrl + Enter</kbd> para guardar
+              </p>
+              <span class="text-xs text-muted-foreground">
+                {{ editedPrompt.length }}/4000
+              </span>
+            </div>
+          </div>
+          <p v-else class="whitespace-pre-wrap text-foreground/90 font-mono text-sm bg-muted/20 p-4 rounded-md">
             {{ prompt.original_prompt }}
           </p>
         </CardContent>
@@ -325,8 +478,12 @@ const formattedOptimizedPrompt = computed<Partial<OptimizedPromptSections>>(() =
         <CardHeader class="pb-3">
           <div class="flex items-center justify-between">
             <CardTitle class="flex items-center gap-2 text-lg font-medium">
-              <Sparkles class="h-5 w-5 text-amber-500" />
+              <Sparkles class="h-5 w-5 text-amber-500" :class="{ 'animate-pulse': isOptimizedPromptLoading }" />
               <span>Prompt Optimizado</span>
+              <span v-if="isOptimizedPromptLoading" class="ml-2 inline-flex items-center gap-1.5 text-xs font-normal text-amber-500 bg-amber-50 dark:bg-amber-900/30 px-2 py-0.5 rounded-full">
+                <Loader2 class="h-3 w-3 animate-spin" />
+                Actualizando...
+              </span>
             </CardTitle>
             <DropdownMenu>
               <DropdownMenuTrigger as-child>
@@ -353,7 +510,23 @@ const formattedOptimizedPrompt = computed<Partial<OptimizedPromptSections>>(() =
           </div>
         </CardHeader>
         <CardContent>
-          <div v-if="Object.keys(formattedOptimizedPrompt).length > 0" class="space-y-6">
+          <div v-if="isOptimizedPromptLoading" class="space-y-6">
+            <div class="space-y-4">
+              <div class="flex items-center gap-2">
+                <Skeleton class="h-4 w-4 rounded-full bg-muted/40" />
+                <Skeleton class="h-4 w-32 rounded-md bg-muted/40" />
+              </div>
+              <Skeleton class="h-24 w-full rounded-lg bg-muted/40" />
+            </div>
+            <div class="space-y-4">
+              <div class="flex items-center gap-2">
+                <Skeleton class="h-4 w-4 rounded-full bg-muted/40" />
+                <Skeleton class="h-4 w-40 rounded-md bg-muted/40" />
+              </div>
+              <Skeleton class="h-32 w-full rounded-lg bg-muted/40" />
+            </div>
+          </div>
+          <div v-else-if="Object.keys(formattedOptimizedPrompt).length > 0" class="space-y-6">
             <template v-if="formattedOptimizedPrompt.prompt_mejorado || formattedOptimizedPrompt.explicación_de_los_cambios">
               <div v-if="formattedOptimizedPrompt.prompt_mejorado" class="space-y-3">
                 <div class="flex items-center gap-2 text-sm font-medium text-foreground/80">

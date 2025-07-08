@@ -3,7 +3,8 @@ import { usePromptStore } from '@/stores/promptStore'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
 import { storeToRefs } from 'pinia'
 import { computed, watch, type Ref } from 'vue'
-import { deletePrompt } from '@/services/prompt'
+import { deletePrompt, updatePrompt } from '@/services/prompt'
+import type { NewPrompt } from '@/types/prompt'
 
 export function usePrompt(idRef: Ref<string | null>) {
   const promptStore = usePromptStore()
@@ -57,11 +58,27 @@ export function usePrompt(idRef: Ref<string | null>) {
     }
   })
 
+  const updatePromptMutation = useMutation({
+    mutationFn: async ({ promptId, prompt }: { promptId: string, prompt: NewPrompt }) => {
+      await updatePrompt(promptId, prompt)
+      return promptId
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['prompt', idRef.value] })
+      qc.invalidateQueries({ queryKey: ['prompts'] })
+    },
+    onError: (error) => {
+      console.error('Error updating prompt:', error)
+    }
+  })
+
   return {
     prompt: computed(() => currentPrompt.value),
     isLoading: prompByIdQuery.isLoading || prompByIdQuery.isFetching,
     refetch: prompByIdQuery.refetch,
     deletePrompt: deletePromptMutation.mutate,
-    isDeleting: deletePromptMutation.isPending
+    isDeleting: deletePromptMutation.isPending,
+    updatePrompt: updatePromptMutation.mutate,
+    isUpdating: updatePromptMutation.isPending
   }
 }
