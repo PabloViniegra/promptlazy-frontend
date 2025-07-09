@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, h, ref, toRef } from 'vue'
+import { computed, ref, toRef } from 'vue'
 import { Copy, Sparkles, Pencil, Trash2, MessageSquare, Star, Info, Check, Loader2 } from 'lucide-vue-next'
 import { getPrompt } from '@/services/prompt'
 import { Button } from '@/components/ui/button'
@@ -21,6 +21,7 @@ import type { OptimizedPromptSections } from '@/types/prompt'
 import { useFavoritePrompt } from '@/composables/useFavoritePrompt'
 import { useQueryClient } from '@tanstack/vue-query'
 import { usePromptStore } from '@/stores/promptStore'
+import { ToastCopyPromptError, ToastCopyPromptSuccess, ToastPromptEliminationError, ToastPromptEliminationSuccess, ToastPromptUpdateError, ToastPromptUpdateSuccess } from '@/utils/toaster'
 
 interface Props {
   promptId: string | null
@@ -43,32 +44,10 @@ const handleDelete = async () => {
 
   try {
     await deletePrompt(idRef.value)
-    toast.success('¡Listo!', {
-      description: 'El prompt ha sido eliminado correctamente',
-      duration: 3000,
-      style: {
-        background: 'hsl(142.1 76.2% 36.3%)',
-        color: 'white',
-        border: 'none',
-        borderRadius: '0.5rem',
-        padding: '1rem',
-        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
-      },
-    })
+    toast.success('¡Listo!', ToastPromptEliminationSuccess)
     router.push('/')
   } catch (error) {
-    toast.error('¡Ups!', {
-      description: 'No se pudo eliminar el prompt. Inténtalo de nuevo.',
-      duration: 4000,
-      style: {
-        background: 'hsl(0 84.2% 60.2%)',
-        color: 'white',
-        border: 'none',
-        borderRadius: '0.5rem',
-        padding: '1rem',
-        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
-      },
-    })
+    toast.error('¡Ups!', ToastPromptEliminationError)
     console.error('Error deleting prompt:', error)
   } finally {
     closeDeleteModal()
@@ -85,61 +64,33 @@ const handleSaveEdit = async () => {
   if (!prompt.value || !editedPrompt.value.trim()) return
 
   try {
-    // Activar el estado de carga
     isOptimizedPromptLoading.value = true
-    
-    // Actualizar el prompt original inmediatamente para feedback visual
+
     promptStore.setCurrentPrompt({
       ...prompt.value,
       original_prompt: editedPrompt.value
     })
-    
-    // Realizar la actualización en el servidor
+
     await updatePrompt({
       promptId: prompt.value.id,
       prompt: { prompt: editedPrompt.value }
     })
-    
-    // Forzar la recarga del prompt optimizado
+
     await refetch()
-    
-    // Asegurarse de que tenemos los datos más recientes
+
     const updatedPrompt = await getPrompt(prompt.value.id)
     if (updatedPrompt) {
       promptStore.setCurrentPrompt(updatedPrompt)
     }
 
-    toast.success('¡Listo!', {
-      description: 'El prompt ha sido actualizado correctamente',
-      duration: 3000,
-      style: {
-        background: 'hsl(142.1 76.2% 36.3%)',
-        color: 'white',
-        border: 'none',
-        borderRadius: '0.5rem',
-        padding: '1rem',
-        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
-      },
-    })
+    toast.success('¡Listo!', ToastPromptUpdateSuccess)
 
     isEditing.value = false
-    // Pequeño retraso para asegurar que la UI se actualice correctamente
     setTimeout(() => {
       isOptimizedPromptLoading.value = false
     }, 100)
   } catch (error) {
-    toast.error('¡Error!', {
-      description: 'No se pudo actualizar el prompt. Inténtalo de nuevo.',
-      duration: 4000,
-      style: {
-        background: 'hsl(0 84.2% 60.2%)',
-        color: 'white',
-        border: 'none',
-        borderRadius: '0.5rem',
-        padding: '1rem',
-        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
-      },
-    })
+    toast.error('¡Error!', ToastPromptUpdateError)
     console.error('Error updating prompt:', error)
   }
 }
@@ -207,57 +158,10 @@ const handleToggleFavorite = async (promptId: string) => {
 const copyToClipboard = async (text: string) => {
   try {
     await navigator.clipboard.writeText(text)
-    toast.success('¡Copiado!', {
-      description: 'El texto se ha copiado al portapapeles',
-      duration: 2000,
-      class: 'group/toast',
-      style: {
-        padding: '0.75rem 1rem',
-        borderRadius: '0.5rem',
-        fontFamily: 'var(--font-sans)',
-        borderLeft: '4px solid var(--color-primary)',
-        transition: 'all 0.3s ease',
-        boxShadow: 'var(--shadow-md)',
-        background: 'hsl(var(--card))',
-        color: 'hsl(var(--card-foreground))',
-        border: '1px solid hsl(var(--border))',
-        backdropFilter: 'blur(8px)',
-        WebkitBackdropFilter: 'blur(8px)',
-      },
-      icon: () => h(Check, { class: 'h-5 w-5 text-green-500' }),
-      classes: {
-        title: 'font-medium text-foreground flex items-center gap-2',
-        description: 'text-sm text-muted-foreground',
-        toast:
-          'group-[.toaster]:animate-in group-[.toaster]:fade-in group-[.toaster]:slide-in-from-bottom-2 group-[.toaster]:duration-300',
-      },
-    })
+    toast.success('¡Copiado!', ToastCopyPromptSuccess)
   } catch (err) {
     console.error('Error al copiar al portapapeles:', err)
-    toast.error('Error', {
-      description: 'No se pudo copiar el texto',
-      duration: 2000,
-      class: 'group/toast',
-      style: {
-        padding: '0.75rem 1rem',
-        borderRadius: '0.5rem',
-        fontFamily: 'var(--font-sans)',
-        borderLeft: '4px solid hsl(var(--destructive))',
-        transition: 'all 0.3s ease',
-        boxShadow: 'var(--shadow-md)',
-        background: 'hsl(var(--destructive)/0.03)',
-        color: 'hsl(var(--destructive))',
-        border: '1px solid hsl(var(--destructive)/0.1)',
-        backdropFilter: 'blur(8px)',
-        WebkitBackdropFilter: 'blur(8px)',
-      },
-      classes: {
-        title: 'font-medium flex items-center gap-2',
-        description: 'text-sm text-muted-foreground/90',
-        toast:
-          'group-[.toaster]:animate-in group-[.toaster]:fade-in group-[.toaster]:slide-in-from-bottom-2 group-[.toaster]:duration-300',
-      },
-    })
+    toast.error('Error', ToastCopyPromptError)
   }
 }
 

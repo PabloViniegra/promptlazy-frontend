@@ -14,7 +14,7 @@ import { User, Key, Star, Code2, Loader2, ArrowRight } from 'lucide-vue-next'
 import type { FormData, UpdateUserRequest } from '@/types/auth'
 import type { UserPrompt } from '@/types/prompt'
 import { deletePrompt } from '@/services/prompt'
-
+import { ToastProfileCurrentPasswordError, ToastProfileErrorElimination, ToastProfileRequiredFieldsError, ToastProfileSuccessElimination } from '@/utils/toaster'
 
 const router = useRouter()
 const { user, updateMe, isUpdatingMe } = useAuth()
@@ -44,58 +44,12 @@ const isFormValid = computed(() => {
 
 const handleSubmit = async () => {
   if (!isFormValid.value) {
-    toast.error('¡Atención!', {
-      description: 'Por favor, completa todos los campos obligatorios',
-      duration: 4000,
-      class: 'group/toast',
-      style: {
-        padding: '0.75rem 1rem',
-        borderRadius: '0.5rem',
-        fontFamily: 'var(--font-sans)',
-        borderLeft: '4px solid hsl(var(--warning))',
-        transition: 'all 0.3s ease',
-        boxShadow: 'var(--shadow-md)',
-        background: 'hsl(var(--card))',
-        color: 'hsl(var(--card-foreground))',
-        border: '1px solid hsl(var(--warning)/0.3)',
-        backdropFilter: 'blur(8px)',
-        WebkitBackdropFilter: 'blur(8px)',
-      },
-      classes: {
-        title: 'font-medium text-foreground flex items-center gap-2',
-        description: 'text-sm text-muted-foreground',
-        toast:
-          'group-[.toaster]:animate-in group-[.toaster]:fade-in group-[.toaster]:slide-in-from-bottom-2 group-[.toaster]:duration-300',
-      },
-    })
+    toast.error('¡Atención!', ToastProfileRequiredFieldsError)
     return
   }
 
   if (formData.value.new_password && !formData.value.current_password) {
-    toast.error('¡Atención!', {
-      description: 'Debes ingresar tu contraseña actual para realizar cambios',
-      duration: 4000,
-      class: 'group/toast',
-      style: {
-        padding: '0.75rem 1rem',
-        borderRadius: '0.5rem',
-        fontFamily: 'var(--font-sans)',
-        borderLeft: '4px solid hsl(var(--warning))',
-        transition: 'all 0.3s ease',
-        boxShadow: 'var(--shadow-md)',
-        background: 'hsl(var(--card))',
-        color: 'hsl(var(--card-foreground))',
-        border: '1px solid hsl(var(--warning)/0.3)',
-        backdropFilter: 'blur(8px)',
-        WebkitBackdropFilter: 'blur(8px)',
-      },
-      classes: {
-        title: 'font-medium text-foreground flex items-center gap-2',
-        description: 'text-sm text-muted-foreground',
-        toast:
-          'group-[.toaster]:animate-in group-[.toaster]:fade-in group-[.toaster]:slide-in-from-bottom-2 group-[.toaster]:duration-300',
-      },
-    })
+    toast.error('¡Atención!', ToastProfileCurrentPasswordError)
     return
   }
 
@@ -118,57 +72,10 @@ const handleSubmit = async () => {
     formData.value.new_password = ''
     formData.value.confirm_password = ''
 
-    toast.success('¡Listo!', {
-      description: 'Tu perfil se ha actualizado correctamente',
-      duration: 3000,
-      class: 'group/toast',
-      style: {
-        padding: '0.75rem 1rem',
-        borderRadius: '0.5rem',
-        fontFamily: 'var(--font-sans)',
-        borderLeft: '4px solid var(--color-primary)',
-        transition: 'all 0.3s ease',
-        boxShadow: 'var(--shadow-md)',
-        background: 'hsl(var(--card))',
-        color: 'hsl(var(--card-foreground))',
-        border: '1px solid hsl(var(--border))',
-        backdropFilter: 'blur(8px)',
-        WebkitBackdropFilter: 'blur(8px)',
-      },
-      classes: {
-        title: 'font-medium text-foreground flex items-center gap-2',
-        description: 'text-sm text-muted-foreground',
-        toast:
-          'group-[.toaster]:animate-in group-[.toaster]:fade-in group-[.toaster]:slide-in-from-bottom-2 group-[.toaster]:duration-300',
-      },
-    })
+    toast.success('¡Listo!', ToastProfileSuccessElimination)
   } catch (error: unknown) {
     console.error('Error updating profile:', error)
-    const errorMessage = error instanceof Error ? error.message : 'Error al actualizar el perfil'
-    toast.error('¡Error!', {
-      description: errorMessage,
-      duration: 4000,
-      class: 'group/toast',
-      style: {
-        padding: '0.75rem 1rem',
-        borderRadius: '0.5rem',
-        fontFamily: 'var(--font-sans)',
-        borderLeft: '4px solid hsl(var(--destructive))',
-        transition: 'all 0.3s ease',
-        boxShadow: 'var(--shadow-md)',
-        background: 'hsl(var(--card))',
-        color: 'hsl(var(--card-foreground))',
-        border: '1px solid hsl(var(--destructive)/0.3)',
-        backdropFilter: 'blur(8px)',
-        WebkitBackdropFilter: 'blur(8px)',
-      },
-      classes: {
-        title: 'font-medium text-foreground flex items-center gap-2',
-        description: 'text-sm text-muted-foreground',
-        toast:
-          'group-[.toaster]:animate-in group-[.toaster]:fade-in group-[.toaster]:slide-in-from-bottom-2 group-[.toaster]:duration-300',
-      },
-    })
+    toast.error('¡Error!', ToastProfileErrorElimination)
   }
 }
 
@@ -200,56 +107,10 @@ const handleDeletePrompt = async (promptId: string) => {
     await deletePrompt(promptId)
     await refetchPrompts()
     closeDeleteModal()
-    toast.success('¡Listo!', {
-      description: 'El prompt se ha eliminado correctamente',
-      duration: 3000,
-      class: 'group/toast',
-      style: {
-        padding: '0.75rem 1rem',
-        borderRadius: '0.5rem',
-        fontFamily: 'var(--font-sans)',
-        borderLeft: '4px solid var(--color-primary)',
-        transition: 'all 0.3s ease',
-        boxShadow: 'var(--shadow-md)',
-        background: 'hsl(var(--card))',
-        color: 'hsl(var(--card-foreground))',
-        border: '1px solid hsl(var(--border))',
-        backdropFilter: 'blur(8px)',
-        WebkitBackdropFilter: 'blur(8px)',
-      },
-      classes: {
-        title: 'font-medium text-foreground flex items-center gap-2',
-        description: 'text-sm text-muted-foreground',
-        toast:
-          'group-[.toaster]:animate-in group-[.toaster]:fade-in group-[.toaster]:slide-in-from-bottom-2 group-[.toaster]:duration-300',
-      },
-    })
+    toast.success('¡Listo!', ToastProfileSuccessElimination)
   } catch (error) {
     console.error('Error deleting prompt:', error)
-    toast.error('¡Error!', {
-      description: 'No se pudo eliminar el prompt',
-      duration: 4000,
-      class: 'group/toast',
-      style: {
-        padding: '0.75rem 1rem',
-        borderRadius: '0.5rem',
-        fontFamily: 'var(--font-sans)',
-        borderLeft: '4px solid hsl(var(--destructive))',
-        transition: 'all 0.3s ease',
-        boxShadow: 'var(--shadow-md)',
-        background: 'hsl(var(--card))',
-        color: 'hsl(var(--card-foreground))',
-        border: '1px solid hsl(var(--destructive)/0.3)',
-        backdropFilter: 'blur(8px)',
-        WebkitBackdropFilter: 'blur(8px)',
-      },
-      classes: {
-        title: 'font-medium text-foreground flex items-center gap-2',
-        description: 'text-sm text-muted-foreground',
-        toast:
-          'group-[.toaster]:animate-in group-[.toaster]:fade-in group-[.toaster]:slide-in-from-bottom-2 group-[.toaster]:duration-300',
-      },
-    })
+    toast.error('¡Error!', ToastProfileErrorElimination)
   } finally {
     isDeleting.value = false
   }
