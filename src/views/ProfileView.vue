@@ -2,7 +2,6 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '@/composables/useAuth'
-import { useAppStore } from '@/stores/appStore'
 import { usePrompts } from '@/composables/usePrompts'
 import { useFavoritePrompt } from '@/composables/useFavoritePrompt'
 import { Button } from '@/components/ui/button'
@@ -19,7 +18,6 @@ import { deletePrompt } from '@/services/prompt'
 
 const router = useRouter()
 const { user, updateMe, isUpdatingMe } = useAuth()
-const appStore = useAppStore()
 const { prompts, refetch: refetchPrompts } = usePrompts()
 const { favourites, toggleFavourite } = useFavoritePrompt()
 
@@ -191,9 +189,7 @@ const closeDeleteModal = () => {
 }
 
 const navigateToPrompt = (prompt: UserPrompt) => {
-  console.log(`Navegando al prompt: ${prompt.id}`)
-  appStore.setSelectedPrompt(prompt.id)
-  router.push('/')
+  router.push({ path: '/', query: { promptId: prompt.id } })
 }
 
 const handleDeletePrompt = async (promptId: string) => {

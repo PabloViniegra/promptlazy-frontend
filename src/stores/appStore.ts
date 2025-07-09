@@ -10,7 +10,6 @@ export const useAppStore = defineStore('app', () => {
   function setSelectedPrompt(promptId: string) {
     action.value = 'view'
     selectedPromptId.value = promptId
-    console.log(`En el store el selectedPromptId es: ${selectedPromptId.value}`)
   }
 
   function resetAction() {

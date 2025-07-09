@@ -3,14 +3,32 @@ import SharedNavbar from '@/components/shared/SharedNavbar.vue'
 import SidebarChat from '@/components/prompts/SidebarChat.vue'
 import PanelView from '@/views/PanelView.vue'
 import { useAppStore } from '@/stores/appStore'
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted, watch } from 'vue'
+import { useRoute } from 'vue-router'
 
 const appStore = useAppStore()
+const route = useRoute()
 const selectedId = ref<string | null>(null)
 const action = computed(() => appStore.action)
 
+const checkUrlForPromptId = () => {
+  const promptId = Array.isArray(route.query.promptId)
+    ? route.query.promptId[0]
+    : route.query.promptId
+
+  if (promptId) {
+    selectedId.value = promptId
+    appStore.setSelectedPrompt(promptId)
+  } else {
+    selectedId.value = null
+    appStore.resetAction()
+  }
+}
+
+onMounted(checkUrlForPromptId)
+watch(() => route.query, checkUrlForPromptId)
+
 function onSelectChat(id: string) {
-  console.log(`Seleccionado: ${id}`)
   selectedId.value = id
   appStore.setSelectedPrompt(id)
 }

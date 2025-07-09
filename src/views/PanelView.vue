@@ -6,7 +6,6 @@ const props = defineProps<{
   action: 'new' | 'view'
   selectedId: string | null
 }>()
-console.log(`Las props son: ${JSON.stringify(props)}`)
 </script>
 <template>
   <div v-if="props.action === 'new'" class="flex flex-col h-full bg-background text-foreground">
