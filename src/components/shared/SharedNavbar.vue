@@ -41,8 +41,8 @@ onMounted(() => {
   <nav
     class="flex items-center justify-between p-4 bg-card/80 backdrop-blur-sm border-b border-border/50 shadow-sm"
   >
-    <router-link 
-      to="/" 
+    <router-link
+      to="/"
       class="flex items-center space-x-3 group relative overflow-hidden p-1.5 rounded-lg transition-all duration-300 hover:bg-slate-100/50 dark:hover:bg-slate-800/50"
     >
       <div class="relative">
@@ -96,7 +96,7 @@ onMounted(() => {
 
             <div class="h-px bg-gradient-to-r from-transparent via-border to-transparent my-1.5"></div>
 
-            <DropdownMenuItem class="flex items-center px-3 py-2 rounded-lg text-sm cursor-pointer hover:bg-muted/50 transition-colors duration-150 focus:bg-muted/50">
+            <DropdownMenuItem class="flex items-center px-3 py-2 rounded-lg text-sm cursor-pointer hover:bg-muted/50 transition-colors duration-150 focus:bg-muted/50" @click="router.push('/profile')">
               <User class="mr-2 h-4 w-4 text-muted-foreground" />
               <span>Perfil</span>
             </DropdownMenuItem>

@@ -31,3 +31,20 @@ export interface Me {
   username: string;
   full_name: string;
 }
+
+export interface UpdateUserRequest {
+  current_password?: string;
+  new_password?: string;
+  full_name?: string;
+  email?: string;
+  username?: string;
+}
+
+export interface FormData {
+  email: string;
+  username: string;
+  full_name: string;
+  current_password: string;
+  new_password: string;
+  confirm_password: string;
+}

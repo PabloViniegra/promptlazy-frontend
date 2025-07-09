@@ -1,5 +1,5 @@
 import { api } from '@/api/api'
-import type { AuthFullResponse, AuthPartialResponse, AuthLoginRequest, AuthRefreshRequest, AuthRegisterRequest, Me } from '@/types/auth'
+import type { AuthFullResponse, AuthPartialResponse, AuthLoginRequest, AuthRefreshRequest, AuthRegisterRequest, Me, UpdateUserRequest } from '@/types/auth'
 
 export async function register(data: AuthRegisterRequest): Promise<AuthFullResponse> {
   const response = await api.post<AuthFullResponse>('/auth/register', data)
@@ -18,5 +18,10 @@ export async function refresh(data: AuthRefreshRequest): Promise<AuthPartialResp
 
 export async function me(): Promise<Me> {
   const response = await api.get<Me>('/auth/me')
+  return response.data
+}
+
+export async function updateMe(data: UpdateUserRequest): Promise<string> {
+  const response = await api.put<string>('/auth/me', data)
   return response.data
 }

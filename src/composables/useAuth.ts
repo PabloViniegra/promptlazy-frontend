@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
-import { register as registerService, login as loginService, refresh as refreshService, me as meService } from '@/services/auth'
+import { register as registerService, login as loginService, refresh as refreshService, me as meService, updateMe as updateMeService } from '@/services/auth'
 import { useAuthStore } from '@/stores/authStore'
-import type { AuthRegisterRequest, AuthLoginRequest, AuthRefreshRequest } from '@/types/auth'
+import type { AuthRegisterRequest, AuthLoginRequest, AuthRefreshRequest, UpdateUserRequest } from '@/types/auth'
 import { watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { toast } from 'vue-sonner'
@@ -175,6 +175,17 @@ export function useAuth() {
     }
   })
 
+  const updateMeMutation = useMutation({
+    mutationFn: (data: UpdateUserRequest) => updateMeService(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['me'] })
+      router.push('/')
+    },
+    onError: (error) => {
+      console.error('Update user failed:', error)
+    }
+  })
+
   return {
     register: registerMutation.mutate,
     isRegistering: registerMutation.isPending,
@@ -190,5 +201,7 @@ export function useAuth() {
       authStore.logout()
       router.push('/access')
     },
+    updateMe: updateMeMutation.mutate,
+    isUpdatingMe: updateMeMutation.isPending,
   }
 }
