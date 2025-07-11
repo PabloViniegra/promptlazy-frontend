@@ -3,6 +3,7 @@ import { defineConfig } from 'vitest/config'
 import vue from '@vitejs/plugin-vue'
 import vueDevTools from 'vite-plugin-vue-devtools'
 import path from 'node:path'
+import netlify from '@netlify/vite-plugin'
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -10,6 +11,7 @@ export default defineConfig({
     vue(),
     vueDevTools(),
     tailwindcss(),
+    netlify()
   ],
   resolve: {
     alias: {
