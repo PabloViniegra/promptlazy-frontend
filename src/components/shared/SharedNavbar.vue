@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '@/composables/useAuth'
-import { Sun as SunIcon, Moon as MoonIcon, ChevronDownIcon, User, LogOut } from 'lucide-vue-next'
+import { Sun as SunIcon, Moon as MoonIcon, ChevronDownIcon, User, LogOut, Github as GithubIcon } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import MainLogo from '@/components/icons/MainLogo.vue'
 import {
@@ -57,9 +57,20 @@ onMounted(() => {
       </div>
       <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
     </router-link>
-    <div class="flex items-center space-x-4">
-      <button @click="toggleTheme" class="p-2 rounded-md hover:bg-secondary">
-        <component :is="isDark ? Sun : Moon" class="h-5 w-5" />
+    <div class="flex items-center space-x-2">
+      <a
+        href="https://github.com/PabloViniegra/promptlazy-frontend"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="p-2 rounded-md hover:bg-secondary transition-colors duration-200 group relative overflow-hidden"
+        aria-label="Ver en GitHub"
+      >
+        <GithubIcon class="h-5 w-5 text-foreground group-hover:text-accent transition-colors duration-200" />
+        <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+      </a>
+      <button @click="toggleTheme" class="p-2 rounded-md hover:bg-secondary transition-colors duration-200 group relative overflow-hidden">
+        <component :is="isDark ? Sun : Moon" class="h-5 w-5 group-hover:text-accent transition-colors duration-200" />
+        <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
       </button>
       <template v-if="isAuthenticated">
         <DropdownMenu>
