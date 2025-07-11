@@ -42,7 +42,6 @@
     "@types/node": "^22.15.33",
     "@vitejs/plugin-vue": "^6.0.0",
     "@vue/eslint-config-typescript": "^14.5.1",
-    "@rollup/rollup-linux-x64-gnu": "4.6.1",
     "@vue/test-utils": "^2.4.6",
     "@vue/tsconfig": "^0.7.0",
     "axios-mock-adapter": "^2.1.0",
@@ -57,5 +56,8 @@
     "vite-plugin-vue-devtools": "^7.7.7",
     "vitest": "^3.2.4",
     "vue-tsc": "^2.2.10"
+  },
+  "optionalDependencies": {
+    "@rollup/rollup-linux-x64-gnu": "4.6.1"
   }
 }
