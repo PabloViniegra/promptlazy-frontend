@@ -1,20 +1,20 @@
-# Frontend de PromptLazy
+# PromptLazy Frontend
 
 <p align="center">
   <img src="public/logo.svg" alt="PromptLazy Logo" width="200" style="filter: invert(100%);"/>
 </p>
 
-## Acerca del Frontend
+## 🚀 Acerca de PromptLazy
 
-Interfaz de usuario moderna para **PromptLazy**, diseñada para ofrecer una experiencia de usuario fluida y atractiva al optimizar prompts de IA.
+**PromptLazy** es una plataforma avanzada para crear, optimizar y gestionar prompts de IA. Nuestro frontend está construido con las últimas tecnologías web para ofrecer una experiencia de usuario excepcional.
 
-### Características Principales
+### ✨ Características Principales
 
-- Interfaz de chat intuitiva
-- Diseño moderno con modo claro/oscuro
-- Totalmente responsivo
-- Optimizado para rendimiento
-- Fácil de mantener y extender
+- 🎨 **Interfaz de chat moderna** con modo claro/oscuro
+- 🔄 **Sistema de autenticación** seguro
+- ⚡ **Rendimiento optimizado** con Vite
+- 🎯 **Enfoque en UX** con animaciones sutiles y retroalimentación visual
+- ⭐ **Sistema de favoritos** para guardar tus prompts preferidos
 
 ## Estructura del Proyecto
 
@@ -35,11 +35,13 @@ src/
 └── views/         # Vistas principales
 ```
 
-## Requisitos Previos
+## 🛠 Requisitos Previos
 
-- Node.js (v16 o superior)
-- npm o yarn
+- Node.js (v18 o superior)
+- pnpm (Gestor de paquetes obligatorio)
 - Git
+
+> **Nota importante:** Este proyecto utiliza pnpm como gestor de paquetes. El uso de npm o yarn no está soportado y puede causar problemas de compatibilidad.
 
 ## Instalación
 
@@ -50,13 +52,20 @@ git clone https://github.com/tu-usuario/promptlazy.git
 cd promptlazy/promptlazy-frontend
 ```
 
-2. **Instalar dependencias**
+2. **Instalar pnpm (si no lo tienes instalado)**
 
 ```bash
-npm install
-# o
-yarn install
+# Instalar pnpm globalmente
+npm install -g pnpm
 ```
+
+3. **Instalar dependencias**
+
+```bash
+pnpm install
+```
+
+> ℹ️ **Importante:** Usa siempre pnpm para instalar dependencias. Otros gestores como npm o yarn no son compatibles.
 
 3. **Configurar variables de entorno**
 
@@ -66,15 +75,33 @@ Crea un archivo `.env.local` basado en `.env.example`:
 VITE_API_URL=http://localhost:8000/api
 ```
 
-## Iniciar el Servidor de Desarrollo
+## 🚀 Iniciar el Servidor de Desarrollo
 
 ```bash
-npm run dev
-# o
-yarn dev
+# Iniciar servidor de desarrollo
+pnpm dev
 ```
 
 La aplicación estará disponible en [http://localhost:5173](http://localhost:5173)
+
+## 🏗 Comandos de Construcción
+
+```bash
+# Construir para producción
+pnpm build
+
+# Previsualizar compilación de producción localmente
+pnpm preview
+
+# Ejecutar tests
+pnpm test
+
+# Ejecutar linter
+pnpm lint
+
+# Formatear código
+pnpm format
+```
 
 ## Comandos Disponibles
 
@@ -85,18 +112,39 @@ La aplicación estará disponible en [http://localhost:5173](http://localhost:51
 - `lint`: Ejecuta el linter
 - `format`: Formatea el código
 
-## Tecnologías Utilizadas
+## 🛠 Tecnologías Utilizadas
 
-- Vue 3 con Composition API
-- TypeScript
-- Tailwind CSS
-- Pinia (gestión de estado)
-- Vue Router
-- Vite
+- **Framework Principal**: Vue 3 con Composition API
+- **Lenguaje**: TypeScript
+- **Estilos**: Tailwind CSS
+- **Gestión de Estado**: Pinia
+- **Enrutamiento**: Vue Router
+- **Bundler**: Vite
+- **Iconos**: Lucide Icons
+- **Formularios**: Vee-Validate
+- **Peticiones HTTP**: Axios
+- **Animaciones**: Framer Motion
+- **Testing**: Vitest
 
-## Licencia
+## 🌟 Novedades (v0.1.0)
+
+### Características Implementadas
+
+- Sistema de autenticación completo con registro y login
+- Interfaz de chat mejorada
+- Sistema de favoritos
+- Perfil de usuario personalizable
+- Modo oscuro con persistencia
+- Diseño responsive mejorado
+- Optimizaciones de rendimiento
+
+## 📄 Licencia
 
 Este proyecto está bajo la Licencia MIT. Consulta el archivo [LICENSE](LICENSE) para más información.
+
+## 📧 Contacto
+
+¿Preguntas o sugerencias? No dudes en abrir un issue o ponerte en contacto con nosotros.
 
 ---
 
