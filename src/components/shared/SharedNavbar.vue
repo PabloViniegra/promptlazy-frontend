@@ -62,11 +62,23 @@ onMounted(() => {
         href="https://github.com/PabloViniegra/promptlazy-frontend"
         target="_blank"
         rel="noopener noreferrer"
-        class="p-2 rounded-md hover:bg-secondary transition-colors duration-200 group relative overflow-hidden"
-        aria-label="Ver en GitHub"
+        class="group relative inline-flex items-center space-x-2 px-3.5 py-2 rounded-lg border border-border/50 bg-gradient-to-br from-card to-card/80 hover:from-accent/5 hover:to-accent/5 transition-all duration-300 hover:shadow-sm hover:border-accent/30"
+        aria-label="Dame una estrella en GitHub"
       >
-        <GithubIcon class="h-5 w-5 text-foreground group-hover:text-accent transition-colors duration-200" />
-        <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+        <div class="relative">
+          <GithubIcon class="h-5 w-5 text-foreground group-hover:text-accent transition-all duration-300" />
+          <span class="absolute inset-0 rounded-full bg-accent/10 scale-0 group-hover:scale-100 opacity-0 group-hover:opacity-100 transition-all duration-300"></span>
+        </div>
+        <span class="hidden sm:inline-flex items-center text-sm font-medium text-foreground/90 group-hover:text-accent transition-colors duration-300">
+          <span class="relative">
+            Dame una estrella
+            <span class="absolute bottom-0 left-0 w-0 h-0.5 bg-accent/50 group-hover:w-full transition-all duration-300"></span>
+          </span>
+          <span class="ml-1.5 inline-flex items-center justify-center h-5 w-5 rounded-full bg-accent/10 text-accent text-xs font-semibold group-hover:bg-accent/20 transition-colors duration-300">
+            ★
+          </span>
+        </span>
+        <div class="absolute inset-0 rounded-lg border border-accent/0 group-hover:border-accent/20 transition-all duration-300"></div>
       </a>
       <button @click="toggleTheme" class="p-2 rounded-md hover:bg-secondary transition-colors duration-200 group relative overflow-hidden">
         <component :is="isDark ? Sun : Moon" class="h-5 w-5 group-hover:text-accent transition-colors duration-200" />
