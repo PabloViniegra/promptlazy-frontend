@@ -140,7 +140,7 @@ onMounted(() => {
             Mi Perfil
           </h1>
           <p class="text-muted-foreground mt-1 font-sans">
-            Gestiona tu información personal y preferencias
+            Gestiona tu información personal y prompts guardados
           </p>
         </div>
       </div>
@@ -372,6 +372,21 @@ onMounted(() => {
                   </div>
                 </div>
               </div>
+            </div>
+            <div v-else class="text-center py-12">
+              <div class="mx-auto w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center mb-4">
+                <Code2 class="h-8 w-8 text-muted-foreground/50" />
+              </div>
+              <h3 class="text-lg font-medium text-foreground mb-2">Aún no tienes prompts</h3>
+              <p class="text-muted-foreground mb-6 max-w-md mx-auto">
+                Los prompts que guardes aparecerán aquí para que puedas gestionarlos fácilmente.
+              </p>
+              <Button
+                @click="$router.push('/')"
+                class="px-6 h-10 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 bg-gradient-to-r from-accent to-blue-600 hover:from-accent/90 hover:to-blue-600/90 text-white shadow-md hover:shadow-lg hover:-translate-y-0.5 mx-auto"
+              >
+                Crear mi primer prompt
+              </Button>
             </div>
           </CardContent>
         </Card>
