@@ -21,7 +21,7 @@ import type { OptimizedPromptSections } from '@/types/prompt'
 import { useFavoritePrompt } from '@/composables/useFavoritePrompt'
 import { useQueryClient } from '@tanstack/vue-query'
 import { usePromptStore } from '@/stores/promptStore'
-import { ToastCopyPromptError, ToastCopyPromptSuccess, ToastPromptEliminationError, ToastPromptEliminationSuccess, ToastPromptUpdateError, ToastPromptUpdateSuccess } from '@/utils/toaster'
+import { ToastCopyPromptError, ToastCopyPromptSuccess, ToastPromptEliminationSuccess, ToastPromptUpdateSuccess } from '@/utils/toaster'
 
 interface Props {
   promptId: string | null
@@ -47,7 +47,10 @@ const handleDelete = async () => {
     toast.success('¡Listo!', ToastPromptEliminationSuccess)
     router.push('/')
   } catch (error) {
-    toast.error('¡Ups!', ToastPromptEliminationError)
+    toast.error('¡Ups!', {
+      description: 'No se pudo eliminar el prompt',
+      duration: 3000,
+    })
     console.error('Error deleting prompt:', error)
   } finally {
     closeDeleteModal()
@@ -90,7 +93,10 @@ const handleSaveEdit = async () => {
       isOptimizedPromptLoading.value = false
     }, 100)
   } catch (error) {
-    toast.error('¡Error!', ToastPromptUpdateError)
+    toast.error('¡Error!', {
+      description: 'No se pudo actualizar el prompt',
+      duration: 3000,
+    })
     console.error('Error updating prompt:', error)
   }
 }
@@ -155,9 +161,23 @@ const handleToggleFavorite = async (promptId: string) => {
   }
 }
 
+function extractOptimizedPrompt(fullText: string): string {
+  const lines = fullText.split('\n')
+  const result: string[] = []
+  const explanationIndex = lines.findIndex(line => line.includes('**MEJORAS APLICADAS**'))
+  if (explanationIndex === -1) return fullText
+  for (let i = 0; i < explanationIndex; i++) {
+    if (!lines[i].startsWith('**') || !lines[i].endsWith('**')) {
+      result.push(lines[i])
+    }
+  }
+  return result.join('\n').trim()
+}
+
 const copyToClipboard = async (text: string) => {
   try {
-    await navigator.clipboard.writeText(text)
+    const promptToCopy = extractOptimizedPrompt(text)
+    await navigator.clipboard.writeText(promptToCopy)
     toast.success('¡Copiado!', ToastCopyPromptSuccess)
   } catch (err) {
     console.error('Error al copiar al portapapeles:', err)

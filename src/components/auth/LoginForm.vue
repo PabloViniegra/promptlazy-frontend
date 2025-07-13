@@ -1,13 +1,15 @@
 <script setup lang="ts">
-import { reactive } from 'vue'
+import { reactive, ref } from 'vue'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/composables/useAuth'
 import LoaderIcon from '@/components/icons/LoaderIcon.vue'
+import { Eye, EyeOff } from 'lucide-vue-next'
 
 const { login, isLoging } = useAuth()
 const form = reactive({ email: '', password: '' })
+const showPassword = ref(false)
 
 async function onLogin() {
   await login({
@@ -50,16 +52,21 @@ async function onLogin() {
         <Input
           id="password-login"
           v-model="form.password"
-          type="password"
+          :type="showPassword ? 'text' : 'password'"
           required
-          class="w-full px-4 py-2.5 text-sm rounded-lg border-border bg-background text-foreground placeholder-muted-foreground focus:ring-2 focus:ring-accent focus:border-transparent transition-all duration-200"
+          class="w-full px-4 py-2.5 text-sm rounded-lg border-border bg-background text-foreground placeholder-muted-foreground focus:ring-2 focus:ring-accent focus:border-transparent transition-all duration-200 pr-10"
           placeholder="••••••••"
           autocomplete="current-password"
         />
-        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-          <svg class="h-5 w-5 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-          </svg>
+        <div class="absolute inset-y-0 right-0 flex items-center pr-3">
+          <button
+            type="button"
+            class="text-muted-foreground hover:text-foreground transition-colors focus:outline-none"
+            @click="showPassword = !showPassword"
+            :aria-label="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+          >
+            <component :is="showPassword ? EyeOff : Eye" class="h-5 w-5" />
+          </button>
         </div>
       </div>
     </div>

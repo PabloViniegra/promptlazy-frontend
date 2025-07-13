@@ -8,6 +8,8 @@ import {
   Send as SendIcon,
   User as UserIcon,
   Bot as BotIcon,
+  Copy as CopyIcon,
+  Check as CheckIcon,
 } from 'lucide-vue-next'
 import { useMessages } from '@/composables/useMessages'
 
@@ -22,6 +24,36 @@ const { messages, isCreating, sendMessage } = useMessages([
 ])
 
 const input = ref<string>('')
+const copiedMessageId = ref<string | null>(null)
+
+function extractOptimizedPrompt(fullText: string): string {
+  const lines = fullText.split('\n')
+  const result: string[] = []
+  const explanationIndex = lines.findIndex(line => line.includes('**MEJORAS APLICADAS**'))
+  if (explanationIndex === -1) return fullText
+  for (let i = 0; i < explanationIndex; i++) {
+    if (!lines[i].startsWith('**') || !lines[i].endsWith('**')) {
+      result.push(lines[i])
+    }
+  }
+
+  return result.join('\n').trim()
+}
+
+async function copyToClipboard(fullText: string, messageId: string) {
+  try {
+    const promptToCopy = extractOptimizedPrompt(fullText)
+    await navigator.clipboard.writeText(promptToCopy)
+    copiedMessageId.value = messageId
+    setTimeout(() => {
+      if (copiedMessageId.value === messageId) {
+        copiedMessageId.value = null
+      }
+    }, 2000)
+  } catch (err) {
+    console.error('Error al copiar al portapapeles:', err)
+  }
+}
 
 function handleSubmit(e: Event) {
   e.preventDefault()
@@ -112,13 +144,30 @@ function handleSubmit(e: Event) {
                       <p v-else-if="line" class="mb-2 last:mb-0">{{ line }}</p>
                       <br v-else-if="line === ''" />
                     </template>
-                    <div
-                      :class="[
-                        'text-xs mt-2 text-right font-mono',
-                        msg.role === 'user' ? 'text-blue-100' : 'text-muted-foreground'
-                      ]"
-                    >
-                      {{ new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }}
+                    <div class="flex justify-between items-center mt-2">
+                      <div v-if="msg.role === 'assistant' && msg.id !== '1'" class="flex-1">
+                        <Button
+                          v-if="msg.content"
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          class="h-7 px-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                          @click="copyToClipboard(msg.content, msg.id)"
+                        >
+                          <CheckIcon v-if="copiedMessageId === msg.id" class="h-3.5 w-3.5 mr-1 text-green-500" />
+                          <CopyIcon v-else class="h-3.5 w-3.5 mr-1" />
+                          {{ copiedMessageId === msg.id ? '¡Copiado!' : 'Copiar prompt' }}
+                        </Button>
+                      </div>
+                      <div
+                        :class="[
+                          'text-xs font-mono',
+                          msg.role === 'user' ? 'text-blue-100' : 'text-muted-foreground',
+                          msg.role === 'assistant' ? 'ml-auto' : ''
+                        ]"
+                      >
+                        {{ new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }}
+                      </div>
                     </div>
                   </div>
                 </Card>

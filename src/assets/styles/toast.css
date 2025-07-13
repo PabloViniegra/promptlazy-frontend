@@ -1,0 +1,119 @@
+:root {
+  --toast-bg: hsl(var(--card));
+  --toast-border: hsl(var(--border));
+  --toast-text: hsl(var(--card-foreground));
+  --toast-shadow: var(--shadow-md);
+  --toast-success: hsl(var(--chart-2));
+  --toast-error: hsl(var(--destructive));
+  --toast-warning: hsl(38, 92%, 50%);
+  --toast-info: hsl(199, 89%, 48%);
+  --toast-padding: 0.75rem 1rem;
+  --toast-border-radius: 0.5rem;
+  --toast-icon-size: 1.25rem;
+}
+
+.toast-wrapper {
+  @apply pointer-events-auto w-full max-w-md p-1;
+}
+
+.toast {
+  @apply relative flex w-full items-center gap-3 overflow-hidden rounded-lg p-4 shadow-lg transition-all duration-300 ease-in-out;
+  background: var(--toast-bg);
+  color: var(--toast-text);
+  border: 1px solid var(--toast-border);
+  box-shadow: var(--toast-shadow);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* Toast variants */
+.toast-success {
+  border-left: 4px solid var(--toast-success);
+}
+
+.toast-error {
+  border-left: 4px solid var(--toast-error);
+}
+
+.toast-warning {
+  border-left: 4px solid var(--toast-warning);
+}
+
+.toast-info {
+  border-left: 4px solid var(--toast-info);
+}
+
+.toast-icon {
+  @apply flex-shrink-0;
+  width: var(--toast-icon-size);
+  height: var(--toast-icon-size);
+}
+
+.toast-content {
+  @apply flex-1;
+}
+
+.toast-title {
+  @apply text-sm font-medium leading-5;
+  color: var(--toast-text);
+}
+
+.toast-description {
+  @apply mt-1 text-sm leading-5 opacity-90;
+  color: var(--toast-text);
+  opacity: 0.9;
+}
+
+.toast-close {
+  @apply ml-2 flex-shrink-0 rounded-md p-1 opacity-70 transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-offset-2;
+  color: var(--toast-text);
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOut {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+.dark .toast {
+  --toast-bg: hsl(var(--card) / 0.9);
+  --toast-border: hsl(var(--border) / 0.3);
+}
+
+.toast-welcome {
+  @apply border-l-4;
+  background: linear-gradient(135deg, hsl(var(--primary) / 0.9), hsl(var(--secondary) / 0.9));
+  color: white;
+  border-color: white;
+}
+
+.toast-welcome .toast-title,
+.toast-welcome .toast-description {
+  color: white;
+}
+
+.toast-welcome .toast-close {
+  color: white;
+  opacity: 0.8;
+}
+
+.toast-welcome .toast-close:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.2);
+}
