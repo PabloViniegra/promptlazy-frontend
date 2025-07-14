@@ -161,22 +161,9 @@ const handleToggleFavorite = async (promptId: string) => {
   }
 }
 
-function extractOptimizedPrompt(fullText: string): string {
-  const lines = fullText.split('\n')
-  const result: string[] = []
-  const explanationIndex = lines.findIndex(line => line.includes('**MEJORAS APLICADAS**'))
-  if (explanationIndex === -1) return fullText
-  for (let i = 0; i < explanationIndex; i++) {
-    if (!lines[i].startsWith('**') || !lines[i].endsWith('**')) {
-      result.push(lines[i])
-    }
-  }
-  return result.join('\n').trim()
-}
-
-const copyToClipboard = async (text: string) => {
+const copyToClipboard = async () => {
   try {
-    const promptToCopy = extractOptimizedPrompt(text)
+    const promptToCopy = formattedOptimizedPrompt.value.prompt_mejorado || prompt.value?.optimized_prompt || ''
     await navigator.clipboard.writeText(promptToCopy)
     toast.success('¡Copiado!', ToastCopyPromptSuccess)
   } catch (err) {
@@ -330,7 +317,7 @@ const formattedOptimizedPrompt = computed<Partial<OptimizedPromptSections>>(() =
               variant="ghost"
               size="icon"
               class="h-8 w-8 text-muted-foreground hover:text-foreground"
-              @click="copyToClipboard(prompt.original_prompt)"
+              @click="copyToClipboard"
             >
               <Copy class="h-4 w-4" />
               <span class="sr-only">Copiar al portapapeles</span>
@@ -421,9 +408,9 @@ const formattedOptimizedPrompt = computed<Partial<OptimizedPromptSections>>(() =
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent class="w-56" align="end">
-                <DropdownMenuItem @click="copyToClipboard(prompt.optimized_prompt)">
+                <DropdownMenuItem @click="copyToClipboard">
                   <Copy class="mr-2 h-4 w-4" />
-                  <span>Copiar</span>
+                  <span>Copiar versión mejorada</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem @click="openDeleteModal" class="text-destructive focus:text-destructive">
                   <Trash2 class="mr-2 h-4 w-4" />

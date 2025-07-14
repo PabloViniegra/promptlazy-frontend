@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card } from '@/components/ui/card'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { formatOptimizedPrompt } from '@/utils/utils'
 import {
   Send as SendIcon,
   User as UserIcon,
@@ -26,23 +27,10 @@ const { messages, isCreating, sendMessage } = useMessages([
 const input = ref<string>('')
 const copiedMessageId = ref<string | null>(null)
 
-function extractOptimizedPrompt(fullText: string): string {
-  const lines = fullText.split('\n')
-  const result: string[] = []
-  const explanationIndex = lines.findIndex(line => line.includes('**MEJORAS APLICADAS**'))
-  if (explanationIndex === -1) return fullText
-  for (let i = 0; i < explanationIndex; i++) {
-    if (!lines[i].startsWith('**') || !lines[i].endsWith('**')) {
-      result.push(lines[i])
-    }
-  }
-
-  return result.join('\n').trim()
-}
-
 async function copyToClipboard(fullText: string, messageId: string) {
   try {
-    const promptToCopy = extractOptimizedPrompt(fullText)
+    const formattedPrompt = formatOptimizedPrompt(fullText)
+    const promptToCopy = formattedPrompt.prompt_mejorado || fullText
     await navigator.clipboard.writeText(promptToCopy)
     copiedMessageId.value = messageId
     setTimeout(() => {
@@ -53,6 +41,10 @@ async function copyToClipboard(fullText: string, messageId: string) {
   } catch (err) {
     console.error('Error al copiar al portapapeles:', err)
   }
+}
+
+const getFormattedMessage = (content: string) => {
+  return formatOptimizedPrompt(content)
 }
 
 function handleSubmit(e: Event) {
@@ -121,28 +113,80 @@ function handleSubmit(e: Event) {
                   ]"
                 >
                   <div class="prose prose-sm max-w-none dark:prose-invert prose-p:my-2 prose-ul:my-2 prose-li:my-1 font-sans">
-                    <template v-for="(line, idx) in msg.content.split('\n')" :key="idx">
-                      <h3
-                        v-if="line.startsWith('**') && line.endsWith('**')"
-                        :class="[
-                          'font-bold text-base mb-2 mt-4 first:mt-0',
-                          msg.role === 'user' ? 'text-white' : 'text-foreground'
-                        ]"
-                      >
-                        {{ line.replace(/\*\*/g, '') }}
-                      </h3>
-                      <ul v-else-if="line.startsWith('•')" class="list-disc pl-5 space-y-1">
-                        <li :class="{ 'text-white': msg.role === 'user' }">
-                          {{ line.slice(2) }}
-                        </li>
-                      </ul>
-                      <ol v-else-if="/^\d+\./.test(line)" class="list-decimal pl-5 space-y-1">
-                        <li :class="{ 'text-white': msg.role === 'user' }">
-                          {{ line.replace(/^\d+\.\s*/, '') }}
-                        </li>
-                      </ol>
-                      <p v-else-if="line" class="mb-2 last:mb-0">{{ line }}</p>
-                      <br v-else-if="line === ''" />
+                    <template v-if="msg.role === 'assistant' && msg.id !== '1'">
+                      <!-- Show formatted sections for optimized prompt -->
+                      <template v-if="getFormattedMessage(msg.content).prompt_mejorado">
+                        <!-- Improved Version Section -->
+                        <div v-if="getFormattedMessage(msg.content).prompt_mejorado" class="space-y-3">
+                          <h3 class="font-bold text-base mb-2 text-foreground">
+                            VERSIÓN MEJORADA
+                          </h3>
+                          <div class="bg-muted/30 p-4 rounded-lg border border-border/50">
+                            <p class="whitespace-pre-wrap text-foreground/90">
+                              {{ getFormattedMessage(msg.content).prompt_mejorado }}
+                            </p>
+                          </div>
+                        </div>
+
+                        <!-- Explanation Section -->
+                        <div v-if="getFormattedMessage(msg.content).explicación_de_los_cambios" class="space-y-3 mt-6">
+                          <h3 class="font-bold text-base mb-2 text-foreground">
+                            MEJORAS APLICADAS
+                          </h3>
+                          <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-900/30">
+                            <p class="whitespace-pre-wrap text-foreground/90">
+                              {{ getFormattedMessage(msg.content).explicación_de_los_cambios }}
+                            </p>
+                          </div>
+                        </div>
+                      </template>
+
+                      <!-- Fallback to original content if not in the expected format -->
+                      <template v-else>
+                        <template v-for="(line, idx) in msg.content.split('\n')" :key="idx">
+                          <h3
+                            v-if="line.startsWith('**') && line.endsWith('**')"
+                            class="font-bold text-base mb-2 mt-4 first:mt-0 text-foreground"
+                          >
+                            {{ line.replace(/\*\*/g, '') }}
+                          </h3>
+                          <ul v-else-if="line.startsWith('•')" class="list-disc pl-5 space-y-1">
+                            <li>{{ line.slice(2) }}</li>
+                          </ul>
+                          <ol v-else-if="/^\d+\./.test(line)" class="list-decimal pl-5 space-y-1">
+                            <li>{{ line.replace(/^\d+\.\s*/, '') }}</li>
+                          </ol>
+                          <p v-else-if="line" class="mb-2 last:mb-0">{{ line }}</p>
+                          <br v-else-if="line === ''" />
+                        </template>
+                      </template>
+                    </template>
+
+                    <!-- Regular message formatting for non-optimized content -->
+                    <template v-else>
+                      <template v-for="(line, idx) in msg.content.split('\n')" :key="idx">
+                        <h3
+                          v-if="line.startsWith('**') && line.endsWith('**')"
+                          :class="[
+                            'font-bold text-base mb-2 mt-4 first:mt-0',
+                            msg.role === 'user' ? 'text-white' : 'text-foreground'
+                          ]"
+                        >
+                          {{ line.replace(/\*\*/g, '') }}
+                        </h3>
+                        <ul v-else-if="line.startsWith('•')" class="list-disc pl-5 space-y-1">
+                          <li :class="{ 'text-white': msg.role === 'user' }">
+                            {{ line.slice(2) }}
+                          </li>
+                        </ul>
+                        <ol v-else-if="/^\d+\./.test(line)" class="list-decimal pl-5 space-y-1">
+                          <li :class="{ 'text-white': msg.role === 'user' }">
+                            {{ line.replace(/^\d+\.\s*/, '') }}
+                          </li>
+                        </ol>
+                        <p v-else-if="line" class="mb-2 last:mb-0">{{ line }}</p>
+                        <br v-else-if="line === ''" />
+                      </template>
                     </template>
                     <div class="flex justify-between items-center mt-2">
                       <div v-if="msg.role === 'assistant' && msg.id !== '1'" class="flex-1">
